@@ -1,0 +1,49 @@
+# Classes:
+
+class Vector3:
+	fields: x,y,z
+	methods: 
+		-+*/
+		Magnitude (static)
+
+class Body:
+	fields:
+		standard gravitational parameter
+		position
+		velocity
+		luminosity
+		reflectivity (RGB)
+	methods:
+		FromKepler(float ...) # generates a new body in orbit around this body
+		                      # from a keplerian equation (eccentricity, semimajor axis etc.) 
+
+class System: (singleton?)
+	fields:
+		list of bodies
+		bounds (from - to +)
+	methods:
+		Add(Body) # adds a body to the System
+
+
+# Algorithms:
+
+GetAcceleration(System): 
+	returns a list of the instantaneous acceleration of each body, using Newton's laws
+	1. generate zero array of length number of bodies
+	2. recurse through all pairs of bodies, finding force*G, GM*Gm/r^2 
+	3. add acceleration , F/GM (GM is stored in the body) to each relevant element
+
+TimeStep(System, acceleration, step): 
+	applies the acceleration to the system and calculates velocity and position,
+	assuming constant acceleration, for the given step (in s).
+	1. Recurse through bodies and acceleration
+	2. Add acceleration*step to velocity
+	3. Add 1/2 * a * t^2 to position
+Draw(point): 
+	simulates light rays from each source, accounting for decreasing intensity
+	and reflections, and returns a bitmap of the result at the given point.
+Display(bitmap):
+	Handles display output, including GUI
+
+click handling, need to research
+
