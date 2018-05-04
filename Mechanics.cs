@@ -1,21 +1,35 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Math;
 using Structures;
 
 class Mechanics {
-	static public (Body, Body) TwoBodyStep(Body body1, Body body2, float time) {
-		double r2 = Math.Pow(Vector3.Magnitude(body1.position-body2.position),2);
-		//Console.WriteLine($"Distance: {r2}");
-		double dV1 = time * body2.stdGrav / r2;
-		double dV2 = time * body1.stdGrav / r2;
-		Vector3 direction1 = body2.position - body1.position;
-		direction1 /= Vector3.Magnitude(direction1);
-		Vector3 direction2 = -direction1;
-		body1.velocity += dV1 * direction1;
-		body2.velocity += dV2 * direction2;
-		Console.WriteLine($"deltaV: {Vector3.Magnitude(dV2 * direction2)}");
-		body1.position += time * body1.velocity;
-		body2.position += time * body2.velocity;
-		return (body1,body2);
+	public Vector3[] GetAcceleration(System s) {
+		Body body1, body2;
+		Vector3[] acceleration;
+		for (int i = 0; i < s.bodies.Length; i++) {
+			acceleration[i] = Vector3.zero;
+		}
+		for (int i = 0; i < s.bodies.Length; i++) {
+			body1 = s.bodies[i]; // We will need the index later so foreach is not possible
+			for (int j = i+1; j < s.bodies.Length; j++) {
+				body2 = s.bodies[j];
+				float mag_force_g = body1.stdGrav * body2.stdGrav / Math.Pow(Vector3.Magnitude(body1.position - body2.position),2);
+				float direction = (body1.position - body2.position);
+				direction /= Vector3.Magnitude(direction);
+				// TODO: Check gravity is attractive on the next two lines
+				float acceleration1 = -direction * force_g / body1.stdGrav;
+				float acceleration2 = direction * force_g / body2.stdGrav;
+				acceleration[i] += acceleration1;
+				acceleration[j] += acceleration2;
+			}
+		} return acceleration;
+	}
+	public void TimeStep(System s, Vector3[] acceleration, float step) {
+		foreach ((Body,Vector3) (body,a) in (s.bodies,acceleration)) {
+			body.velocity += a*step;
+			body.position += a*Math.Pow(step,2)/2;
+		}
 	}
 }

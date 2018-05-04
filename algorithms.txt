@@ -8,11 +8,12 @@ class Vector3:
 
 class Body:
 	fields:
-		standard gravitational parameter
-		position
-		velocity
-		luminosity
-		reflectivity (RGB)
+		standard gravitational parameter (m^3 s^-2)
+		radius (m)
+		position vector (m)
+		velocity vector (m)
+		luminosity spectrum (rgb)
+		reflectivity (rgb)
 	methods:
 		FromKepler(float ...) # generates a new body in orbit around this body
 		                      # from a keplerian equation (eccentricity, semimajor axis etc.) 
@@ -36,7 +37,7 @@ GetAcceleration(System):
 TimeStep(System, acceleration, step): 
 	applies the acceleration to the system and calculates velocity and position,
 	assuming constant acceleration, for the given step (in s).
-	1. Recurse through bodies and acceleration
+	1. Iterate through bodies and acceleration
 	2. Add acceleration*step to velocity
 	3. Add 1/2 * a * t^2 to position
 Draw(point): 

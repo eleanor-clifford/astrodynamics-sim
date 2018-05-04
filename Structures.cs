@@ -31,22 +31,31 @@ namespace Structures
 		}
 		public static double Magnitude(Vector3 v) {
 			return Math.Sqrt(Math.Pow(v.x,2)+Math.Pow(v.y,2)+Math.Pow(v.z,2));
-		} 
+		}
+		public static Vector3 zero = new Vector3(0,0,0);
 	}
 	class Body {
-		public Body(double stdGrav, double radius, Vector3 position, Vector3 velocity) {
+		public Body(double stdGrav, double radius, Vector3 position, Vector3 velocity, Vector3 luminositySpectrum, Vector3 reflectivity) {
 			this.stdGrav = stdGrav;
 			this.radius = radius;
 			this.position = position;
 			this.velocity = velocity;
+			this.luminositySpectrum = luminositySpectrum;
+			this.reflectivity = reflectivity
 		}
 		public double stdGrav {get; protected set;}
 		public double radius {get; protected set;}
 		public Vector3 position {get; set;}
 		public Vector3 velocity {get; set;}
+		public Vector3 luminositySpectrum {get; protected set;}
+		public Vector3 reflectivity {get; protected set;}
+		//public static Body FromKepler(float ...);
 	}
 	class System {
 		public List<Body> bodies {get; protected set;}
 		public Vector3 bounds {get; protected set; }
+		public void Add(Body body) {
+			self.bodies.Add(body)
+		}
 	}
 }
