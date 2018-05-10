@@ -1,11 +1,9 @@
-# Astrophysics Simulation
+# Astrodynamics Simulation
 
 ## Engine:
 
 - Able to model Keplerian orbits
-- Able to simulate Newtonian motion in n body systems
-- Able to render 3D space into 2D
-- Able to simulate light intensity and reflections in systems with multiple luminous bodies.
+- Able to simulate Newtonian motion in n body systems- Able to simulate light intensity and reflections in systems with multiple luminous bodies, and render into 2D
 - Simple collision modelling (join into more massive body?)
 
 ## Interface:

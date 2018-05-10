@@ -40,7 +40,19 @@ TimeStep(System, acceleration, step):
 	1. Iterate through bodies and acceleration
 	2. Add acceleration*step to velocity
 	3. Add 1/2 * a * t^2 to position
-Draw(point): 
+ReflectionPlanes(luminous body,System):
+	returns the plane axis of reflection of each body in the system from the luminous body.
+	This refers to the hemisphere that light reaches.
+VisiblePlanes(position vector of observer, System):
+	returns the plane axis through each body to which the 
+	vector between the observer and the centre is normal.
+Color(System):
+	Finds the average color of each body
+Draw(reflection planes, visible planes, colors):
+	converts the results of the last three algorithms into a 2D array to be drawn to the screen
+
+
+Draw(point):
 	simulates light rays from each source, accounting for decreasing intensity
 	and reflections, and returns a bitmap of the result at the given point.
 Display(bitmap):
