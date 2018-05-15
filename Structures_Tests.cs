@@ -14,12 +14,13 @@ namespace Structures {
                 Console.WriteLine("a*i != a");
                 return false;
             }
-            if ((double)5*a/(double)5 != a) {
+            if ((double)5 * a / (double)5 != a) {
                 Console.WriteLine("5*a/5 != i");
                 return false;
             }
             if (a + a != 2 * a) {
-                Console.WriteLine($"a + a != 2 * a");
+                Console.WriteLine("a + a != 2 * a");
+                return false;
             }
             
             // Inverse (Also tests Determinant, Minor, Transpose_Cofactor)
@@ -37,6 +38,41 @@ namespace Structures {
             var a_sq = new Matrix3(new Vector3(3,14,4), new Vector3(2,15,4), new Vector3(2,2,1));
             if (a * a != a_sq) {
                 Console.WriteLine($"a * a != a_sq");
+                return false;
+            }
+            return true;
+        }
+        public static bool VectorTest() {
+            var a = new Vector3(2,3,6);
+            var z = Vector3.zero;
+            // Scalar Arithmetic
+            if (a + z != a || z + a != a) {
+                Console.WriteLine("a + z != a");
+                return false;
+            }
+            if ((double)5 * a / (double)5 != a) {
+                Console.WriteLine("5*a/5 != i");
+                return false;
+            }
+            if (a + a != 2 * a) {
+                Console.WriteLine("a + a != 2 * a");
+                return false;
+            }
+            if (-a != z - a) {
+                Console.WriteLine("-a != z - a");
+                return false;
+            }
+            if (Vector3.Magnitude(a) != 7) {
+                Console.WriteLine("Incorrect Magnitude");
+                return false;
+            }
+            if (Vector3.dot(a,z) != 0 || Vector3.dot(a,a) != 49) {
+                Console.WriteLine("incorrect dot");
+                return false;
+            }
+            var a_u = new Vector3((double)2/7,(double)3/7,(double)6/7);
+            if (Vector3.Unit(a) != a_u) {
+                Console.WriteLine("incorrect unit");
                 return false;
             }
             return true;
