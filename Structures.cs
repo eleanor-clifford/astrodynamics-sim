@@ -45,7 +45,13 @@ namespace Structures
 		public static Vector3 Unit(Vector3 v) {
 			return v / Vector3.Magnitude(v);
 		}
+		public static double UnitDot(Vector3 a, Vector3 b) {
+			return Vector3.dot(Vector3.Unit(a),Vector3.Unit(b));
+		}
 		public static Vector3 zero = new Vector3(0,0,0);
+		public static Vector3 i = new Vector3(1,0,0);
+		public static Vector3 j = new Vector3(0,1,0);
+		public static Vector3 k = new Vector3(0,0,1);
 	}
 	class Matrix3 {
 		// the fields describe the rows
@@ -57,6 +63,23 @@ namespace Structures
 			this.y = y;
 			this.z = z;
 		}
+		public Matrix3(double x, double y) {
+			this.x = new Vector3(
+				Math.Cos(y),
+				0,
+				Math.Sin(y)
+			);
+			this.y = new Vector3(
+				Math.Sin(x)*Math.Sin(y),
+				Math.Cos(y),
+				-(Math.Sin(x)*Math.Cos(y))
+			);
+			this.z = new Vector3(
+				-(Math.Cos(x)*Math.Sin(y)),
+				Math.Sin(x),
+				Math.Cos(x)*Math.Cos(y)
+			);
+		}
 		public override String ToString() {
 			return $"Matrix3( {x.x} {x.y} {x.z}\n         {y.x} {y.y} {y.z}\n         {z.x} {z.y} {z.z} )";
 		}
@@ -66,25 +89,7 @@ namespace Structures
 		public static bool operator!= (Matrix3 a, Matrix3 b) {
 			return !(a == b);
 		}
-		public static Matrix3 Rotation(double x, double y) {
-			return new Matrix3 (
-				new Vector3(
-					Math.Cos(y),
-					0,
-					Math.Sin(y)
-				),
-				new Vector3(
-					Math.Sin(x)*Math.Sin(y),
-					Math.Cos(y),
-					-(Math.Sin(x)*Math.Cos(y))
-				),
-				new Vector3(
-					-(Math.Cos(x)*Math.Sin(y)),
-					Math.Sin(x),
-					Math.Cos(x)*Math.Cos(y)
-				)
-			);
-		}
+
 		public static Matrix3 operator+ (Matrix3 a, Matrix3 b) {
 			return new Matrix3(
 				a.x + b.x,
@@ -175,26 +180,36 @@ namespace Structures
 			return (1/Matrix3.Determinant(m)) * C_T;
 		}
 	}
-	class Body {
-		public Body(double stdGrav, double radius, Vector3 position, Vector3 velocity, Vector3 luminositySpectrum, Vector3 reflectivity) {
-			this.stdGrav = stdGrav;
-			this.radius = radius;
-			this.position = position;
-			this.velocity = velocity;
-			this.luminositySpectrum = luminositySpectrum;
-			this.reflectivity = reflectivity;
+	class Plane {
+		// P = M(mu*i+lambda*j) + ck
+		public Matrix3 M {get; set;}
+		public double c {get; set;}
+		public Vector3 Normal() {
+			return M*Vector3.k;
 		}
-		public double stdGrav {get; protected set;}
-		public double radius {get; protected set;}
+		public bool OnPlane(Vector3 p) {
+			Vector3 norm = p - M*Vector3.k;
+			Vector3 rot = Matrix3.Inverse(M) * norm;
+			if (rot.z == 0) return true;
+			else return false;
+		}
+	}
+	class Body {
+		public double stdGrav {get; set;}
+		public double radius {get; set;}
 		public Vector3 position {get; set;}
 		public Vector3 velocity {get; set;}
-		public Vector3 luminositySpectrum {get; protected set;}
-		public Vector3 reflectivity {get; protected set;}
-		//public static Body FromKepler(float ...);
+		public Vector3 luminositySpectrum {get; set;}
+		public Vector3 reflectivity {get; set;}
+		//public static Body FromKepler(double semimajoraxis, double eccentricity, double inclination, double ) {
+
 	}
 	class PlanetarySystem {
 		public List<Body> bodies {get; protected set;}
 		public Vector3 bounds {get; protected set; }
+		public PlanetarySystem() {
+			bodies = new List<Body>();
+		}
 		public void Add(Body body) {
 			bodies.Add(body);
 		}

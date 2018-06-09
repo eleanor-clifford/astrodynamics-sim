@@ -32,7 +32,7 @@ class Body:
 		luminosity spectrum (rgb)
 		reflectivity (rgb)
 	methods:
-		FromKepler(float ...) # generates a new body in orbit around this body
+		(constructor) (float ...) # generates a new body in orbit around this body
 		                      # from a keplerian equation (eccentricity, semimajor axis etc.) 
 
 class PlanetarySystem: (singleton?)
@@ -45,7 +45,7 @@ class PlanetarySystem: (singleton?)
 
 # Algorithms:
 
-GetAcceleration(PlanetarySystem): 
+GetAcceleration(PlanetarySystem):
 	returns a list of the instantaneous acceleration of each body, using Newton's laws
 	1. generate zero array of length number of bodies
 	2. recurse through all pairs of bodies, finding force*G, GM*Gm/r^2 
@@ -58,20 +58,15 @@ TimeStep(PlanetarySystem, acceleration, step):
 	2. Add acceleration*step to velocity
 	3. Add 1/2 * a * t^2 to position
 ReflectionPlanes(luminous body,PlanetarySystem):
-	returns the plane axis of reflection of each body in the PlanetarySystem from the luminous body.
+	returns the plane of reflection of each body in the PlanetarySystem from the luminous body.
 	This refers to the hemisphere that light reaches.
 VisiblePlanes(position vector of observer, PlanetarySystem):
-	returns the plane axis through each body to which the 
+	returns the plane through each body to which the 
 	vector between the observer and the centre is normal.
 Color(PlanetarySystem):
 	Finds the average color of each body
 Draw(reflection planes, visible planes, colors):
 	converts the results of the last three algorithms into a 2D array to be drawn to the screen
-
-
-Draw(point):
-	simulates light rays from each source, accounting for decreasing intensity
-	and reflections, and returns a bitmap of the result at the given point.
 Display(bitmap):
 	Handles display output, including GUI
 

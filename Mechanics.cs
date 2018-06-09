@@ -4,7 +4,7 @@ using System.Linq;
 using Structures;
 
 class Mechanics {
-	public Vector3[] GetAcceleration(PlanetarySystem s) {
+	public static Vector3[] GetAcceleration(PlanetarySystem s) {
 		Body body1, body2;
 		Vector3[] acceleration = new Vector3[s.bodies.Count];
 		// Initialise our array to zero, since the default is a null pointer.
@@ -29,7 +29,8 @@ class Mechanics {
 			}
 		} return acceleration;
 	}
-	public void TimeStep(PlanetarySystem s, Vector3[] acceleration, float step) {
+	public static void TimeStep(PlanetarySystem s, Vector3[] acceleration, double step) {
+		//Console.WriteLine($"Acceleration: {acceleration[0]}");
 		for (int i = 0; i < acceleration.Length; i++) {
 			Body body = s.bodies[i];
 			Vector3 a = acceleration[i];
