@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using static Constants;
 namespace Structures
 {
 	class Vector3 {
@@ -71,13 +72,20 @@ namespace Structures
 			);
 			this.y = new Vector3(
 				Math.Sin(x)*Math.Sin(y),
-				Math.Cos(y),
+				Math.Cos(x),
 				-(Math.Sin(x)*Math.Cos(y))
 			);
 			this.z = new Vector3(
 				-(Math.Cos(x)*Math.Sin(y)),
 				Math.Sin(x),
 				Math.Cos(x)*Math.Cos(y)
+			);
+		}
+		public static Matrix3 ZRotation(double z) {
+			return new Matrix3 (
+				new Vector3(Math.Cos(z),-Math.Sin(z),0),
+				new Vector3(Math.Sin(z),Math.Cos(z),0),
+				new Vector3(0,0,1)
 			);
 		}
 		public override String ToString() {
@@ -201,8 +209,48 @@ namespace Structures
 		public Vector3 velocity {get; set;}
 		public Vector3 luminositySpectrum {get; set;}
 		public Vector3 reflectivity {get; set;}
-		//public static Body FromKepler(double semimajoraxis, double eccentricity, double inclination, double ) {
-
+		public Body (
+			Body parent = null, 
+			double semimajoraxis = 0, 
+			double eccentricity = 0, 
+			double inclination = 0, 
+			double ascendingNodeLongitude = 0,
+			double periapsisArgument = 0,
+			double trueAnomaly = 0
+		) {
+			if (parent == null) return;
+			if (inclination < 0 
+			 || eccentricity < 0 
+			 || semimajoraxis < 0 
+			 || ascendingNodeLongitude < 0
+			 || ascendingNodeLongitude >= 2*Math.PI
+			 || periapsisArgument < 0
+			 || periapsisArgument >= 2*Math.PI
+			 || trueAnomaly < 0
+			 || trueAnomaly >= 2*Math.PI
+			){
+				throw new ArgumentException();
+			}
+			double periapsis = semimajoraxis*(1-eccentricity);
+			double apoapsis = semimajoraxis*(1+eccentricity);
+			double semiminoraxis = Math.Sqrt(Math.Pow(semimajoraxis,2) - Math.Pow(semimajoraxis-periapsis,2));
+			Vector3 reference = new Vector3(1,0,0);
+			// Reference direction is the x axis and reference plane is xy
+			// This is the transformation from the reference direction/plane to the periapsis/orbital plane.
+			// First incline the orbit, then move the ascending node.
+			Matrix3 transformation = Matrix3.ZRotation(ascendingNodeLongitude) 
+			                       * new Matrix3(inclination,0);
+			// The equation of the ellipse is r = (a*cos(anomaly) + r_p - a,b*sin(anomaly),0)
+			Vector3 referencePosition = new Vector3(semimajoraxis*Math.Cos(trueAnomaly) + periapsis - semimajoraxis,
+			                                        semiminoraxis*Math.Sin(trueAnomaly),0);
+			Vector3 truePosition = parent.position + transformation * Matrix3.ZRotation(periapsisArgument) * referencePosition;
+			// v = sqrt(mu(2/r - 1/a))
+			double orbitalSpeed = Math.Sqrt(parent.stdGrav*(2/Vector3.Magnitude(referencePosition) - 1/semimajoraxis));
+			Vector3 referenceVelocity = new Vector3(0,orbitalSpeed,0);
+			Vector3 trueVelocity = transformation * Matrix3.ZRotation(periapsisArgument + trueAnomaly) * referenceVelocity;
+			this.position = truePosition;
+			this.velocity = trueVelocity;
+		}
 	}
 	class PlanetarySystem {
 		public List<Body> bodies {get; protected set;}

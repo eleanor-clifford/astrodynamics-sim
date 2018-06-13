@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using static Constants;
 namespace Structures {
     public class Tests {
         public static bool MatrixTest() {
@@ -74,6 +75,66 @@ namespace Structures {
             if (Vector3.Unit(a) != a_u) {
                 Console.WriteLine("incorrect unit");
                 return false;
+            }
+            return true;
+        }
+
+        public static bool BodyTest() {
+            var sun = new Body {
+    			stdGrav = 4.47e20,
+    			radius = 6.95e10, // 100x
+    			position = Vector3.zero,
+    			velocity = Vector3.zero,
+     			luminositySpectrum = new Vector3(1,1,1),
+    			reflectivity = Vector3.zero
+    		};
+            var earth1 = new Body(
+                parent: sun,
+                semimajoraxis: 3.5*AU,
+                eccentricity: 0.7,
+                inclination: 37*deg,
+                ascendingNodeLongitude: 128*deg,
+                periapsisArgument: 250*deg,
+                trueAnomaly: 7*deg
+            ) {
+                stdGrav = 3.986004419e14,
+            	radius = 6.371e8, // 100x
+		        luminositySpectrum = Vector3.zero,
+    	        reflectivity = new Vector3(0,0.2,0.8),
+            };
+            var expected_position = AU * new Vector3(0.7104623753,0.4739122976,-0.6417428577);
+            var expected_velocity = new Vector3(-31555.21806,60479.93979,-9320.949522);
+            if (Math.Abs(Vector3.Magnitude(earth1.position - expected_position))/Vector3.Magnitude(expected_position) > Math.Pow(10,-6)) {
+                return false;
+            }
+            if (Math.Abs(Vector3.Magnitude(earth1.velocity - expected_velocity))/Vector3.Magnitude(expected_velocity) > Math.Pow(10,-6)) {
+                return false;
+            }
+            sun.stdGrav = 1.3271440019e20;
+            for (double i = 0; i < 2*Math.PI; i += 0.1) {
+                for (double j = 0; j < 2*Math.PI; j += 0.1) {
+                    for (double k = 0; k < 2*Math.PI; k += 0.1) {
+                        for (double l = 0; l < 2*Math.PI; l += 0.1) {
+                            var earth = new Body(
+                                parent: sun,
+                                semimajoraxis: 1*AU,
+                                inclination: Math.PI,
+                                ascendingNodeLongitude: j,
+                                periapsisArgument: k,
+                                trueAnomaly: l
+                            ) {
+            	        		stdGrav = 3.986004419e14,
+            			        radius = 6.371e8, // 100x
+    	        		        luminositySpectrum = Vector3.zero,
+    		        	        reflectivity = new Vector3(0,0.2,0.8),
+    		                };
+                            if (!(Math.Abs(Vector3.Magnitude(earth.velocity) - 3e4) < 1e3 )) {
+                                Console.WriteLine($"{i},{j},{k},{l},{earth.velocity}");
+                                return false;
+                            }
+                        }
+                    }
+                }
             }
             return true;
         }

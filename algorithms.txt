@@ -1,3 +1,5 @@
+# N.B: Cartesian coordinates are defined with x right, y forwards, z up
+
 # Classes:
 
 class Vector3:
