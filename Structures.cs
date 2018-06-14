@@ -203,12 +203,13 @@ namespace Structures
 		}
 	}
 	class Body {
+		public string name {get; set;}
 		public double stdGrav {get; set;}
 		public double radius {get; set;}
 		public Vector3 position {get; set;}
 		public Vector3 velocity {get; set;}
-		public Vector3 luminositySpectrum {get; set;}
-		public Vector3 reflectivity {get; set;}
+		public Vector3 luminositySpectrum {get; set;} = Vector3.zero;
+		public Vector3 reflectivity {get; set;} = Vector3.zero;
 		public Body (
 			Body parent = null, 
 			double semimajoraxis = 0, 
@@ -218,6 +219,8 @@ namespace Structures
 			double periapsisArgument = 0,
 			double trueAnomaly = 0
 		) {
+			// First check the values are reasonable. If parent == null it is assumed that
+			// position and velocity are set explicitly
 			if (parent == null) return;
 			if (inclination < 0 
 			 || eccentricity < 0 
@@ -231,22 +234,35 @@ namespace Structures
 			){
 				throw new ArgumentException();
 			}
+			// derive some useful values
 			double periapsis = semimajoraxis*(1-eccentricity);
 			double apoapsis = semimajoraxis*(1+eccentricity);
+			// a^2 = b^2 + c^2 , a,b,c >= 0
+			// a is the semimajor axis, b the semiminor axis, and c the distance from the center to the foci
 			double semiminoraxis = Math.Sqrt(Math.Pow(semimajoraxis,2) - Math.Pow(semimajoraxis-periapsis,2));
-			Vector3 reference = new Vector3(1,0,0);
+			
 			// Reference direction is the x axis and reference plane is xy
-			// This is the transformation from the reference direction/plane to the periapsis/orbital plane.
+			Vector3 reference = new Vector3(1,0,0);
+
+			// This is the transformation from the reference plane to the orbital plane.
 			// First incline the orbit, then move the ascending node.
 			Matrix3 transformation = Matrix3.ZRotation(ascendingNodeLongitude) 
 			                       * new Matrix3(inclination,0);
-			// The equation of the ellipse is r = (a*cos(anomaly) + r_p - a,b*sin(anomaly),0)
+			// The equation of the ellipse in the reference plane is
+			// r = (a*cos(anomaly) + r_p - a, b*sin(anomaly),0)
+			// with the parent body at the origin
 			Vector3 referencePosition = new Vector3(semimajoraxis*Math.Cos(trueAnomaly) + periapsis - semimajoraxis,
 			                                        semiminoraxis*Math.Sin(trueAnomaly),0);
+			// To get the true position we rotate the ellipse in the reference plane according to
+			// The argument of periapsis, then apply the transformation to the orbital plane
 			Vector3 truePosition = parent.position + transformation * Matrix3.ZRotation(periapsisArgument) * referencePosition;
-			// v = sqrt(mu(2/r - 1/a))
+			
+			// |v| = sqrt(mu(2/r - 1/a))
 			double orbitalSpeed = Math.Sqrt(parent.stdGrav*(2/Vector3.Magnitude(referencePosition) - 1/semimajoraxis));
+			// For the reference ellipse, the initial velocity is parallel to the positive y axis
 			Vector3 referenceVelocity = new Vector3(0,orbitalSpeed,0);
+			// Since the shape of the ellipse does not matter to the final velocity, the argument of periapsis
+			// and true anomaly can be combined. Then we apply the transformation to the orbital plane
 			Vector3 trueVelocity = transformation * Matrix3.ZRotation(periapsisArgument + trueAnomaly) * referenceVelocity;
 			this.position = truePosition;
 			this.velocity = trueVelocity;
@@ -255,8 +271,9 @@ namespace Structures
 	class PlanetarySystem {
 		public List<Body> bodies {get; protected set;}
 		public Vector3 bounds {get; protected set; }
-		public PlanetarySystem() {
-			bodies = new List<Body>();
+		public PlanetarySystem(List<Body> bodies = null) {
+			if (bodies == null) this.bodies = new List<Body>();
+			else this.bodies = bodies;
 		}
 		public void Add(Body body) {
 			bodies.Add(body);
