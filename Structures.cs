@@ -259,11 +259,19 @@ namespace Structures
 			
 			// |v| = sqrt(mu(2/r - 1/a))
 			double orbitalSpeed = Math.Sqrt(parent.stdGrav*(2/Vector3.Magnitude(referencePosition) - 1/semimajoraxis));
-			// For the reference ellipse, the initial velocity is parallel to the positive y axis
-			Vector3 referenceVelocity = new Vector3(0,orbitalSpeed,0);
-			// Since the shape of the ellipse does not matter to the final velocity, the argument of periapsis
-			// and true anomaly can be combined. Then we apply the transformation to the orbital plane
-			Vector3 trueVelocity = transformation * Matrix3.ZRotation(periapsisArgument + trueAnomaly) * referenceVelocity;
+			// dy/dx = -b/a cot v
+			Vector3 referenceVelocity;
+			if (trueAnomaly == 0) {
+				referenceVelocity = new Vector3(0, orbitalSpeed, 0);
+			} else if (trueAnomaly == Math.PI) {
+				referenceVelocity = new Vector3(0, -orbitalSpeed, 0);
+			} else if (trueAnomaly > 0 && trueAnomaly < Math.PI) {
+				referenceVelocity = orbitalSpeed * Vector3.Unit(new Vector3(-1, (semiminoraxis/semimajoraxis) * 1/Math.Tan(Math.PI),0));
+			} else {
+				referenceVelocity = orbitalSpeed * Vector3.Unit(new Vector3(1, -(semiminoraxis/semimajoraxis) * 1/Math.Tan(Math.PI),0));
+			}
+			// Rotate by the argument of periapsis then apply the transformation to the orbital plane
+			Vector3 trueVelocity = transformation * Matrix3.ZRotation(periapsisArgument) * referenceVelocity;
 			this.position = truePosition;
 			this.velocity = trueVelocity;
 		}
@@ -277,6 +285,41 @@ namespace Structures
 		}
 		public void Add(Body body) {
 			bodies.Add(body);
+		}
+		public void TimeStep(double step) {
+			var acceleration = this.GetAcceleration();
+			//Console.WriteLine($"Acceleration: {acceleration[0]}");
+			for (int i = 0; i < acceleration.Length; i++) {
+				Body body = this.bodies[i];
+				Vector3 a = acceleration[i];
+				body.velocity += step*a;
+				body.position += body.velocity + Math.Pow(step,2)*a/2;
+			}
+		}
+		protected Vector3[] GetAcceleration() {
+			Body body1, body2;
+			Vector3[] acceleration = new Vector3[this.bodies.Count];
+			// Initialise our array to zero, since the default is a null pointer.
+			for (int i = 0; i < this.bodies.Count; i++) {
+				acceleration[i] = Vector3.zero;
+			}
+			for (int i = 0; i < this.bodies.Count; i++) {
+				body1 = this.bodies[i]; // We will need the index later so foreach is not possible
+				for (int j = i+1; j < this.bodies.Count; j++) {
+					body2 = this.bodies[j]; // Again here
+					// The magnitude of the force, multiplied by G, = %mu_1 * %mu_2 / r^2
+					double mag_force_g = body1.stdGrav * body2.stdGrav / Math.Pow(Vector3.Magnitude(body1.position - body2.position),2);
+					// We lost direction in the previous calculation (since we had to square the vector), but we need it.
+					Vector3 direction = (body1.position - body2.position);
+					direction /= Vector3.Magnitude(direction);
+					// TODO: Check gravity is attractive on the next two lines
+					// since acceleration is F/m, and we have G*F and G*m, we can find an acceleration vector easily
+					Vector3 acceleration1 =  mag_force_g * -direction / body1.stdGrav;
+					Vector3 acceleration2 = mag_force_g * direction / body2.stdGrav;
+					acceleration[i] += acceleration1;
+					acceleration[j] += acceleration2;
+				}
+			} return acceleration;
 		}
 	}
 }

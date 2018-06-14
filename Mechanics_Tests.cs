@@ -1,6 +1,6 @@
 using System;
 using Structures;
-using static Mechanics.Mechanics;
+//using static Mechanics.Mechanics;
 using static Constants;
 
 namespace Mechanics {
@@ -61,8 +61,7 @@ namespace Mechanics {
                     else return false;
     			}
     			lastPosition = sys.bodies[1].position;
-    			var a = GetAcceleration(sys);
-	    		Mechanics.TimeStep(sys,a,t);
+	    		sys.TimeStep(t);
             }
 	    }
     }
