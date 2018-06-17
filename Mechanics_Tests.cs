@@ -1,5 +1,6 @@
 using System;
 using Structures;
+using System.Collections.Generic;
 //using static Mechanics.Mechanics;
 using static Constants;
 
@@ -28,20 +29,10 @@ namespace Mechanics {
     		//Console.WriteLine(sys.bodies);
     		var initialPosition = sys.bodies[1].position;
     		Vector3 lastPosition = sys.bodies[1].position;
-    		double t = 1;
     		bool half = false;
-    		for (int i = 0; true; i++) {
-				/*
-                if (i%100000 == 0) {
-    				Console.WriteLine($"Sun Position: {sys.bodies[0].position}\nEarth Position: {sys.bodies[1].position}\n");
-    				Console.WriteLine($"Sun Velocity: {sys.bodies[0].velocity}\nEarth Velocity: {sys.bodies[1].velocity}\n");
-    				Console.WriteLine($"Position Difference: {initialPosition - sys.bodies[1].position}\n");
-    				var acuteAngle = Math.Acos(Vector3.UnitDot(initialPosition,sys.bodies[1].position));
-    				Console.WriteLine($"Angle: {(half ? 2*Math.PI - acuteAngle : acuteAngle)}\n");
-    				Console.WriteLine($"Orbital Radius {Vector3.Magnitude(sys.bodies[1].position)}\n");
-    				//Thread.Sleep(1);
-    			}
-                */
+			int i = 0;
+    		foreach (List<Body> bodies in sys.Start()) {
+				i++;
     			if (!half && Vector3.Magnitude(lastPosition - initialPosition) > Vector3.Magnitude(sys.bodies[1].position - initialPosition))
     			{
     				half = true;
@@ -57,12 +48,18 @@ namespace Mechanics {
     				Console.WriteLine($"Relative radius difference: {(Vector3.Magnitude(sys.bodies[1].position) - 1*AU)/(1*AU)}");
     				*/
                     double radiusDifference = (Vector3.Magnitude(sys.bodies[1].position) - 1*AU)/(1*AU);
-                    if (radiusDifference < 1e-5) return true;
+                    if (radiusDifference < 1e-5) {
+						Console.WriteLine(i);
+						return true;
+					}
                     else return false;
     			}
     			lastPosition = sys.bodies[1].position;
-	    		sys.TimeStep(t);
-            }
+				if (i >= 1e8) {
+					// We shouldn't ever get here, but if everything goes wrong it will eventually fall here and return
+					return false;
+				}
+            } return false;
 	    }
     }
 }

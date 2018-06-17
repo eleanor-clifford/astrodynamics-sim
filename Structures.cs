@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using static Constants;
+using System.Threading;
+using System.Threading.Tasks;
 namespace Structures
 {
 	class Vector3 {
@@ -204,10 +206,12 @@ namespace Structures
 	}
 	class Body {
 		public string name {get; set;}
+		public Body parent {get; set;}
 		public double stdGrav {get; set;}
 		public double radius {get; set;}
-		public Vector3 position {get; set;}
-		public Vector3 velocity {get; set;}
+		public Vector3 position {get; set;} = Vector3.zero;
+		public Vector3 velocity {get; set;} = Vector3.zero;
+		public Vector3 angleReference { get; protected set;} = Vector3.i;
 		public Vector3 luminositySpectrum {get; set;} = Vector3.zero;
 		public Vector3 reflectivity {get; set;} = Vector3.zero;
 		public Body (
@@ -222,6 +226,7 @@ namespace Structures
 			// First check the values are reasonable. If parent == null it is assumed that
 			// position and velocity are set explicitly
 			if (parent == null) return;
+			this.parent = parent;
 			if (inclination < 0 
 			 || eccentricity < 0 
 			 || semimajoraxis < 0 
@@ -274,9 +279,11 @@ namespace Structures
 			Vector3 trueVelocity = transformation * Matrix3.ZRotation(periapsisArgument) * referenceVelocity;
 			this.position = truePosition;
 			this.velocity = trueVelocity;
+			this.angleReference = transformation * Matrix3.ZRotation(periapsisArgument) * Vector3.i;
 		}
 	}
 	class PlanetarySystem {
+		protected bool running = false;
 		public List<Body> bodies {get; protected set;}
 		public Vector3 bounds {get; protected set; }
 		public PlanetarySystem(List<Body> bodies = null) {
@@ -286,40 +293,84 @@ namespace Structures
 		public void Add(Body body) {
 			bodies.Add(body);
 		}
-		public void TimeStep(double step) {
-			var acceleration = this.GetAcceleration();
-			//Console.WriteLine($"Acceleration: {acceleration[0]}");
-			for (int i = 0; i < acceleration.Length; i++) {
-				Body body = this.bodies[i];
-				Vector3 a = acceleration[i];
-				body.velocity += step*a;
-				body.position += body.velocity + Math.Pow(step,2)*a/2;
-			}
-		}
 		protected Vector3[] GetAcceleration() {
-			Body body1, body2;
 			Vector3[] acceleration = new Vector3[this.bodies.Count];
-			// Initialise our array to zero, since the default is a null pointer.
-			for (int i = 0; i < this.bodies.Count; i++) {
+			// Initialise our array to Vector3.zero, since the default is a null pointer.
+			Parallel.For (0, this.bodies.Count, i => {
 				acceleration[i] = Vector3.zero;
-			}
-			for (int i = 0; i < this.bodies.Count; i++) {
-				body1 = this.bodies[i]; // We will need the index later so foreach is not possible
-				for (int j = i+1; j < this.bodies.Count; j++) {
-					body2 = this.bodies[j]; // Again here
+			});
+			Parallel.For (0, this.bodies.Count, i => {
+				Body body1 = this.bodies[i]; // We will need the index later so foreach is not possible
+				Parallel.For ( i+1, this.bodies.Count, j=> {
+					Body body2 = this.bodies[j]; // Again here
 					// The magnitude of the force, multiplied by G, = %mu_1 * %mu_2 / r^2
 					double mag_force_g = body1.stdGrav * body2.stdGrav / Math.Pow(Vector3.Magnitude(body1.position - body2.position),2);
 					// We lost direction in the previous calculation (since we had to square the vector), but we need it.
 					Vector3 direction = (body1.position - body2.position);
 					direction /= Vector3.Magnitude(direction);
-					// TODO: Check gravity is attractive on the next two lines
 					// since acceleration is F/m, and we have G*F and G*m, we can find an acceleration vector easily
 					Vector3 acceleration1 =  mag_force_g * -direction / body1.stdGrav;
 					Vector3 acceleration2 = mag_force_g * direction / body2.stdGrav;
 					acceleration[i] += acceleration1;
 					acceleration[j] += acceleration2;
+				});
+			});
+			return acceleration;
+		}
+		protected void TimeStep(double step) {
+			var acceleration = this.GetAcceleration();
+			Parallel.For (0, acceleration.Length, i=> {
+				Body body = this.bodies[i];
+				Vector3 a = acceleration[i];
+				body.velocity += step*a;
+				body.position += body.velocity + Math.Pow(step,2)*a/2;
+			});
+		}
+		public IEnumerable<List<Body>> Start(double step = 1, bool verbose = false) {
+			this.running = true;
+			int i = 0;
+			bool[] half = new bool[this.bodies.Count];
+			Vector3[] initialPosition = new Vector3[this.bodies.Count];
+    		Vector3[] lastPosition = new Vector3[this.bodies.Count];
+			if (verbose) {
+				for (int j = 0; j < this.bodies.Count; j++) {
+					half[j] = false;
+					initialPosition[j] = this.bodies[j].position;
+					lastPosition[j] = this.bodies[j].position;
 				}
-			} return acceleration;
+				Console.WriteLine("Starting System");
+			}
+			while (running) {
+				i++;
+                if (verbose && i%1000 == 0) {
+					for (int j = 0; j < this.bodies.Count; j++) {
+						var b = this.bodies[j];			
+	    				Console.WriteLine($"{b.name}:\n\tPosition: {b.position}\n\tVelocity: {b.velocity}");
+    					if (b.parent != null) {
+							var acuteAngle = Math.Acos(Vector3.UnitDot(b.angleReference,b.position));
+    						Console.WriteLine($"\tAngle: {(half[j] ? 2*Math.PI - acuteAngle : acuteAngle)/deg}");
+    						Console.WriteLine($"\tOrbital Radius {Vector3.Magnitude(b.position)/AU} AU\n");
+						} else {
+							Console.WriteLine($"\tDistance from origin: {Vector3.Magnitude(b.position)/AU} AU");
+						}
+						if (!half[j] && Vector3.Magnitude(lastPosition[j] - initialPosition[j]) > Vector3.Magnitude(b.position - initialPosition[j]))
+		   	 			{
+   			 				half[j] = true;
+							//System.Threading.Thread.Sleep(100000);
+		    			}
+   		 				if (half[j] && Vector3.Magnitude(lastPosition[j] - initialPosition[j]) < Vector3.Magnitude(b.position - initialPosition[j]))
+    					{
+    						half[j] = false;
+						}
+						lastPosition[j] = b.position;
+					}	
+				}
+				this.TimeStep(step);
+				yield return this.bodies;
+			}
+		}
+		public void Stop() {
+			this.running = false;
 		}
 	}
 }
