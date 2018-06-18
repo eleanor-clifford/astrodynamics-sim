@@ -271,9 +271,9 @@ namespace Structures
 			} else if (trueAnomaly == Math.PI) {
 				referenceVelocity = new Vector3(0, -orbitalSpeed, 0);
 			} else if (trueAnomaly > 0 && trueAnomaly < Math.PI) {
-				referenceVelocity = orbitalSpeed * Vector3.Unit(new Vector3(-1, (semiminoraxis/semimajoraxis) * 1/Math.Tan(Math.PI),0));
+				referenceVelocity = orbitalSpeed * Vector3.Unit(new Vector3(-1, (semiminoraxis/semimajoraxis) * (1/Math.Tan(trueAnomaly)),0));
 			} else {
-				referenceVelocity = orbitalSpeed * Vector3.Unit(new Vector3(1, -(semiminoraxis/semimajoraxis) * 1/Math.Tan(Math.PI),0));
+				referenceVelocity = orbitalSpeed * Vector3.Unit(new Vector3(1, -(semiminoraxis/semimajoraxis) * (1/Math.Tan(trueAnomaly)),0));
 			}
 			// Rotate by the argument of periapsis then apply the transformation to the orbital plane
 			Vector3 trueVelocity = transformation * Matrix3.ZRotation(periapsisArgument) * referenceVelocity;
@@ -299,9 +299,11 @@ namespace Structures
 			Parallel.For (0, this.bodies.Count, i => {
 				acceleration[i] = Vector3.zero;
 			});
-			Parallel.For (0, this.bodies.Count, i => {
+			//Parallel.For (0, this.bodies.Count, i => {
+			for (int i = 0; i < this.bodies.Count; i++) {
 				Body body1 = this.bodies[i]; // We will need the index later so foreach is not possible
-				Parallel.For ( i+1, this.bodies.Count, j=> {
+				//Parallel.For ( i+1, this.bodies.Count, j=> {
+				for (int j = i + 1; j < this.bodies.Count; j++) {
 					Body body2 = this.bodies[j]; // Again here
 					// The magnitude of the force, multiplied by G, = %mu_1 * %mu_2 / r^2
 					double mag_force_g = body1.stdGrav * body2.stdGrav / Math.Pow(Vector3.Magnitude(body1.position - body2.position),2);
@@ -313,22 +315,23 @@ namespace Structures
 					Vector3 acceleration2 = mag_force_g * direction / body2.stdGrav;
 					acceleration[i] += acceleration1;
 					acceleration[j] += acceleration2;
-				});
-			});
+				}//);
+			}//);
 			return acceleration;
 		}
 		protected void TimeStep(double step) {
 			var acceleration = this.GetAcceleration();
-			Parallel.For (0, acceleration.Length, i=> {
+			//Parallel.For (0, acceleration.Length, i=> {
+			for (int i = 0; i < acceleration.Length; i++) {
 				Body body = this.bodies[i];
 				Vector3 a = acceleration[i];
+				body.position += step*body.velocity + Math.Pow(step,2)*a/2;
 				body.velocity += step*a;
-				body.position += body.velocity + Math.Pow(step,2)*a/2;
-			});
+			}//);
 		}
 		public IEnumerable<List<Body>> Start(double step = 1, bool verbose = false) {
 			this.running = true;
-			int i = 0;
+			int i = -1;
 			bool[] half = new bool[this.bodies.Count];
 			Vector3[] initialPosition = new Vector3[this.bodies.Count];
     		Vector3[] lastPosition = new Vector3[this.bodies.Count];
@@ -343,20 +346,22 @@ namespace Structures
 			while (running) {
 				i++;
                 if (verbose && i%1000 == 0) {
-					for (int j = 0; j < this.bodies.Count; j++) {
+					//for (int j = 0; j < this.bodies.Count; j++) {
+					for (int j = this.bodies.Count - 1; j >= 0; j--) {
 						var b = this.bodies[j];			
 	    				Console.WriteLine($"{b.name}:\n\tPosition: {b.position}\n\tVelocity: {b.velocity}");
     					if (b.parent != null) {
 							var acuteAngle = Math.Acos(Vector3.UnitDot(b.angleReference,b.position));
-    						Console.WriteLine($"\tAngle: {(half[j] ? 2*Math.PI - acuteAngle : acuteAngle)/deg}");
-    						Console.WriteLine($"\tOrbital Radius {Vector3.Magnitude(b.position)/AU} AU\n");
+							var acuteAngleVelocity = Math.Acos(Vector3.UnitDot(b.angleReference,b.velocity));
+    						Console.WriteLine($"\tPosition Angle: {(half[j] ? 2*Math.PI - acuteAngle : acuteAngle)/deg} deg");
+    						Console.WriteLine($"\tVelocity Angle: {acuteAngleVelocity/deg} deg");
+							Console.WriteLine($"\tOrbital Radius {Vector3.Magnitude(b.position)/AU} AU\n");
 						} else {
 							Console.WriteLine($"\tDistance from origin: {Vector3.Magnitude(b.position)/AU} AU");
 						}
 						if (!half[j] && Vector3.Magnitude(lastPosition[j] - initialPosition[j]) > Vector3.Magnitude(b.position - initialPosition[j]))
 		   	 			{
    			 				half[j] = true;
-							//System.Threading.Thread.Sleep(100000);
 		    			}
    		 				if (half[j] && Vector3.Magnitude(lastPosition[j] - initialPosition[j]) < Vector3.Magnitude(b.position - initialPosition[j]))
     					{

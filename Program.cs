@@ -15,10 +15,11 @@ class Program {
 				else Console.WriteLine("Vector Tests Failed");		
 				if (Structures.Tests.BodyTest()) Console.WriteLine("Body Tests Passed");
 				else Console.WriteLine("Body Tests Failed");
-				if (Mechanics.Tests.EarthSun()) Console.WriteLine("Earth-Sun Tests Passed");
-				else Console.WriteLine("Earth-Sun Tests Failed");
+				//if (Mechanics.Tests.EarthSun()) Console.WriteLine("Earth-Sun Tests Passed");
+				//else Console.WriteLine("Earth-Sun Tests Failed");
 				PlanetarySystem solar_system = Structures.Examples.solar_system;
-				foreach (List<Body> step in solar_system.Start(step: 10, verbose: true)) {
+				foreach (List<Body> step in solar_system.Start(step: 1, verbose: true)) {
+					//solar_system.Stop();
 					continue;
 				}
 				
