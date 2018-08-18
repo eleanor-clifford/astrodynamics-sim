@@ -10,10 +10,11 @@ namespace Structures {
 			sun = new Body() {
 				name = "Sol",
 				stdGrav = 1.32712440018e20,
-				radius = 6.96342e10, // 100x
+				radius = 24622e5,//6.96342e9,
 				position = Vector3.zero,
 				velocity = Vector3.zero,
-	 			luminositySpectrum = new Vector3(1,1,1) // Change this to get good brightness across all planets
+	 			luminositySpectrum = new Vector3(1,1,1), // Change this to get good brightness across all planets
+				reflectivity = new Vector3(0,1,0)
 			};
 			solar_system = new PlanetarySystem(new List<Body>() {
 				// All radii are multiplied by 100
@@ -21,7 +22,7 @@ namespace Structures {
 				// http://www.met.rdg.ac.uk/~ross/Astronomy/Planets.html
 				// Colors from https://planetarium.madison.k12.wi.us/planets-true.htm
 				// Radii from https://en.wikipedia.org/wiki/List_of_Solar_System_objects_by_size
-				sun,
+				(Body)sun.Clone(),
 				new Body(
 					parent: sun,
 					semimajoraxis: 0.38709893*AU,
@@ -148,7 +149,7 @@ namespace Structures {
 					radius = 1186e5,
 					reflectivity = new Vector3(0.732870760490961,0.6071190239708979,0.4988704626052213)
 				}
-			});
+			}) { bounds = 50*AU*new Vector3(1,1,1) };
 		}
 	}
 }

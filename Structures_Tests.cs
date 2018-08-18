@@ -76,6 +76,11 @@ namespace Structures {
                 Console.WriteLine("incorrect unit");
                 return false;
             }
+            var exp = new Vector3(1000,0,-100);
+            if (Vector3.LogByComponent(exp,10) != new Vector3(3,0,-2)) {
+                Console.WriteLine("incorrect log");
+                return false;
+            };
             return true;
         }
 

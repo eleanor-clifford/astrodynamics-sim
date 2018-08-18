@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 namespace Structures
 {
-	class Vector3 {
+	public class Vector3 {
 		public double x {get; set;}
 		public double y {get; set;}
 		public double z {get; set;}
@@ -51,12 +51,40 @@ namespace Structures
 		public static double UnitDot(Vector3 a, Vector3 b) {
 			return Vector3.dot(Vector3.Unit(a),Vector3.Unit(b));
 		}
-		public static Vector3 zero = new Vector3(0,0,0);
-		public static Vector3 i = new Vector3(1,0,0);
-		public static Vector3 j = new Vector3(0,1,0);
-		public static Vector3 k = new Vector3(0,0,1);
+		public static Vector3 Log(Vector3 v, double b = Math.E) {
+			var polar = CartesianToPolar(v);
+			var log_polar = new Vector3 (Math.Log(polar.x,b),polar.y,polar.z);
+			var log = PolarToCartesian(log_polar);
+			return log;
+		}
+		public static Vector3 LogByComponent(Vector3 v, double b = Math.E) {
+			var r = new Vector3(0,0,0); // using Vector3.zero will modify it
+			if (v.x < 0) r.x = -Math.Log(-v.x,b);
+			else if (v.x != 0) r.x = Math.Log(v.x,b);
+			if (v.y < 0) r.y = -Math.Log(-v.y,b);
+			else if (v.y != 0) r.y = Math.Log(v.y,b);
+			if (v.z < 0) r.z = -Math.Log(-v.z,b);
+			else if (v.z != 0) r.z = Math.Log(v.z,b);
+			//Console.WriteLine($"{v} -> {r}");
+			return r;
+		}
+		public static Vector3 CartesianToPolar(Vector3 v) {
+			// ISO Convention
+			var r = Vector3.Magnitude(v);
+			var theta = Math.Acos(Vector3.UnitDot(v,Vector3.k));
+			var phi = Math.Acos(Vector3.UnitDot(new Vector3(v.x,v.y,0),Vector3.i));
+			if (v.y < 0) phi = -phi;
+			return new Vector3(r,theta,phi);
+		}
+		public static Vector3 PolarToCartesian(Vector3 v) {
+			return Matrix3.ZRotation(v.z) * new Matrix3(0,v.y) * (v.x*Vector3.k);
+		}
+		public static Vector3 zero {get;} = new Vector3(0,0,0);
+		public static Vector3 i {get;} = new Vector3(1,0,0);
+		public static Vector3 j {get;} = new Vector3(0,1,0);
+		public static Vector3 k {get;} = new Vector3(0,0,1);
 	}
-	class Matrix3 {
+	public class Matrix3 {
 		// the fields describe the rows
 		public Vector3 x {get;}
 		public Vector3 y {get;}
@@ -190,7 +218,7 @@ namespace Structures
 			return (1/Matrix3.Determinant(m)) * C_T;
 		}
 	}
-	class Plane {
+	public class Plane {
 		// P = M(mu*i+lambda*j) + ck
 		public Matrix3 M {get; set;}
 		public double c {get; set;}
@@ -204,7 +232,7 @@ namespace Structures
 			else return false;
 		}
 	}
-	class Body {
+	public class Body : ICloneable {
 		public string name {get; set;}
 		public Body parent {get; set;}
 		public double stdGrav {get; set;}
@@ -281,17 +309,62 @@ namespace Structures
 			this.velocity = trueVelocity;
 			this.angleReference = transformation * Matrix3.ZRotation(periapsisArgument) * Vector3.i;
 		}
+		public object Clone() {
+			return new Body {
+				name = this.name,
+				parent = this.parent,
+				stdGrav = this.stdGrav,
+				radius = this.radius,
+				position = this.position,
+				velocity = this.velocity,
+				angleReference = this.angleReference,
+				luminositySpectrum = this.luminositySpectrum,
+				reflectivity = this.reflectivity
+			};
+		}
 	}
-	class PlanetarySystem {
+	public class PlanetarySystem {
 		protected bool running = false;
 		public List<Body> bodies {get; protected set;}
-		public Vector3 bounds {get; protected set; }
+		public List<int> centers {get; set;} = new List<int>();
+		// -1 indicates space is not locked
+		public int center_index = -1;
+		public Task center_task {get; private set;}
+		CancellationTokenSource center_task_source;
+		CancellationToken center_task_token;
+		public Vector3 bounds {get; set;}
 		public PlanetarySystem(List<Body> bodies = null) {
 			if (bodies == null) this.bodies = new List<Body>();
 			else this.bodies = bodies;
 		}
 		public void Add(Body body) {
 			bodies.Add(body);
+		}
+		public void ReCenter(Body center) {
+			Vector3 p = center.position;
+			Vector3 v = center.velocity;
+			foreach (Body b in this.bodies) {
+				b.position -= p;
+				b.velocity -= v;
+			}
+		}
+		public void ReCenterLocked(int interval, Body center) {
+			center_task_source = new CancellationTokenSource();
+			center_task_token = center_task_source.Token;
+			center_task = Task.Run(() => {
+				while (true) {
+					ReCenter(center);
+					if (interval != 0) Thread.Sleep(interval);
+					if (center_task_token.IsCancellationRequested) {
+						break;
+					}
+				}
+			},center_task_token);
+		}
+		public void UnlockCenter() {
+			if (center_task_source != null) {
+				center_task_source.Cancel();
+			}
 		}
 		protected Vector3[] GetAcceleration() {
 			Vector3[] acceleration = new Vector3[this.bodies.Count];
@@ -328,6 +401,9 @@ namespace Structures
 				body.position += step*body.velocity + Math.Pow(step,2)*a/2;
 				body.velocity += step*a;
 			}//);
+		}
+		public void StartNoReturn(double step = 1, bool verbose = false) {
+			foreach (var b in Start(step,verbose)) { continue; }
 		}
 		public IEnumerable<List<Body>> Start(double step = 1, bool verbose = false) {
 			this.running = true;
