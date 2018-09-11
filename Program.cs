@@ -13,9 +13,10 @@ using static Input;
 
 class Program {
 	public static PlanetarySystem activesys;
+	public static Task mechanics;
+	public static double STEP = 100;
 	
 	static void Main(string[] args) {
-		double STEP = 100;
 		foreach (string s in args) {
 			if (s == "--test") {
 				if (Structures.Tests.MatrixTest()) Console.WriteLine("Matrix Tests Passed");
@@ -34,7 +35,13 @@ class Program {
 				
 			} else if (s == "--gtk") {
 				PlanetarySystem solar_system = Structures.Examples.solar_system;
+				foreach (String s2 in args) {
+					if (s2 == "--inner") {
+						solar_system = Structures.Examples.inner_solar_system;
+					}
+				}
 				solar_system.centers.Add(0);
+				//solar_system.centers.Add(3);
 				activesys = solar_system;
 				foreach (String s2 in args) {
 					if (s2 == "--blackhole") {
@@ -73,7 +80,7 @@ class Program {
 						STEP = 1;
 					}
 				}
-				Task.Run(() => solar_system.StartNoReturn(step: STEP, verbose: false));
+				mechanics = Task.Run(() => solar_system.StartNoReturn(step: STEP, verbose: false));
 				Application.Init();
 				Gtk.Window mainWindow = new Gtk.Window("Astrodynamics Simulation");
 				mainWindow.SetDefaultSize(1280,720);
@@ -91,9 +98,19 @@ class Program {
 					};
 				} else {
 					sys_view = new SystemView(solar_system);
+					foreach (String s2 in args) {
+						if (s2 == "--inner") {
+							sys_view.camera = new Camera(1*AU,new Vector3(80*deg,20*deg,0));
+							sys_view.radius_multiplier = 2;
+							sys_view.line_multiplier = 0.8;
+							sys_view.bounds_multiplier = 1;
+							sys_view.perspective_scale = 0.5;
+						}
+					}
 				}
 				mainWindow.Add(sys_view);
-				Task.Run(() => sys_view.Play(10));
+				Task.Run(() => sys_view.Play(0));
+				Program.activesys.ReCenterLocked(INTERVAL,null);
 				mainWindow.ShowAll();
 				Application.Run();
 			}

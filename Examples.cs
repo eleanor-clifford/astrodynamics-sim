@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Structures;
 using static Constants;
@@ -6,6 +7,7 @@ namespace Structures {
 	static class Examples {
 		public static Body sun;
 		public static PlanetarySystem solar_system;
+		public static PlanetarySystem inner_solar_system;
 		static Examples() {
 			sun = new Body() {
 				name = "Sol",
@@ -134,7 +136,7 @@ namespace Structures {
 					stdGrav = 6.836530e15,
 					radius = 24622e5,
 					reflectivity = new Vector3(0.5525244704623422,0.7383866805149026,0.868736820570925)
-				},
+				},/*
 				new Body(
 					parent: sun,
 					semimajoraxis: 39.48168677*AU,
@@ -148,8 +150,9 @@ namespace Structures {
 					stdGrav = 8.72e11,
 					radius = 1186e5,
 					reflectivity = new Vector3(0.732870760490961,0.6071190239708979,0.4988704626052213)
-				}
+				}*/
 			}) { bounds = 50*AU*new Vector3(1,1,1) };
+			inner_solar_system = new PlanetarySystem(solar_system.bodies.Take(5).ToList());
 		}
 	}
 }

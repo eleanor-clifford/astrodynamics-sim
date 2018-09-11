@@ -1,17 +1,40 @@
 using System;
+using System.Collections.Generic;
 using Gtk;
 using Cairo;
 using Structures;
 using System.Threading;
 using System.Threading.Tasks;
+using static Constants;
 namespace Graphics {
+	static class Transforms {
+		public static Vector3 Perspective(Vector3 true_position, Camera c) {
+			return Matrix3.ExtrinsicZYXRotation(c.angle)*(true_position - c.position);
+		}
+	}
+	class Camera {
+		public Vector3 position {get; protected set;}
+		public Vector3 angle {get; protected set;}
+		public Camera(double distance, Vector3 angle) {
+			this.angle = angle;
+			position = Matrix3.IntrinsicZYXRotation(angle)*new Vector3(0,0,distance);
+		}
+	}
 	class SystemView : DrawingArea {
 		public PlanetarySystem sys {get; private set;}
 		bool playing = false;
+		private Vector3 bounds;
 		public bool logarithmic {get; set;} = false;
 		public double log_base {get; set;} = 1.5;
 		private bool started {get; set;} = false;
 		private double min_log;
+		public Camera camera {get; set;} = new Camera(1*AU,new Vector3(80*deg,20*deg,0));
+		public double bounds_multiplier {get; set;} = 0.5;
+		public double radius_multiplier {get; set;} = 10;
+		public double line_multiplier {get; set;} = 0.8;
+		public double perspective_scale = 0.2;
+		public int line_max {get; set;} = 150;
+		private List<Vector3>[] paths;
 		public void Redraw() {
 			started = false;
 		}
@@ -19,51 +42,89 @@ namespace Graphics {
 			ctx.SetSourceRGB(0,0,0);
 			ctx.Paint();
 			ctx.Translate(AllocatedWidth/2,AllocatedHeight/2);
-			Vector3 bounds;
-
+			ctx.Scale(0.5,0.5);
 			if (logarithmic) {
 				if (!started) {
 					min_log = 9e99;
 					foreach (Body b in sys.bodies) {
+						var p = b.position - sys.origin;
 						if (b.name == "Sol") continue;
-						if (Math.Log(Vector3.Magnitude(b.position),log_base) < min_log) {
-							min_log = Math.Log(Vector3.Magnitude(b.position),log_base);
+						if (Math.Log(Vector3.Magnitude(p),log_base) < min_log) {
+							min_log = Math.Log(Vector3.Magnitude(p),log_base);
 						}
 					}
 					started = true; 
 				} 
 				bounds = 0.5*Vector3.Log(sys.bounds, log_base);
 			} else {
-				bounds = sys.bounds; 
+				if (!started) {
+					max = 0;
+					foreach (Body b in sys.bodies) {
+						var p = Vector3.Magnitude(Transforms.Perspective(b.position - sys.origin,camera));
+						var v = Transforms.Perspective(b.position - sys.origin,camera);
+						if (p > max) {
+							max = p;
+						}
+					}
+					started = true;
+					bounds = bounds_multiplier * max * new Vector3(1,1,1);
+				}
 			}
 			var scale = Math.Min(AllocatedWidth/bounds.x,AllocatedHeight/bounds.y);
 			ctx.Scale(scale,scale);
-			
-			foreach (Body body in sys.bodies) {
-				Vector3 pos;
-				if (logarithmic) {
-					var log_pos = Vector3.Log(body.position, log_base);
-					pos = log_pos - min_log*Vector3.Unit(log_pos);
-				} else {
-					pos = body.position;
+			if (paths == null) {
+				paths = new List<Vector3>[sys.bodies.Count];
+				for (int i = 0; i < sys.bodies.Count; i++) {
+					paths[i] = new List<Vector3>();
 				}
-				var cl = Vector3.zero;
-				//if (body.name != "Sol") {
-					cl = Contrast(body.reflectivity);
-				//} else {
-				//	cl = Vector3.zero;
-				//}
-				var r = body.radius*10;
+			}
+			for (int i = 0; i < sys.bodies.Count; i++) {
+				Body body = sys.bodies[i];
+				var r = radius_multiplier * body.radius * Math.Pow((Vector3.Magnitude(camera.position) / Vector3.Magnitude(body.position - camera.position)),perspective_scale);
+				ctx.LineWidth = line_multiplier * r;
 				if (logarithmic) {
 				//	r = Math.Log(body.radius/100,log_base)/100;
 					r = body.radius*1e5;
 				}
-				ctx.SetSourceRGB (255*cl.x,255*cl.y,255*cl.z);
-				ctx.Arc(pos.x,pos.y,r,0,2*Math.PI);
-				var s = pos/(Math.Max(AllocatedWidth,AllocatedHeight));
-				//Console.WriteLine($"{body.name}:\n\t{Vector3.CartesianToPolar(pos)}, {Vector3.Magnitude(bounds)}\n\t{Vector3.CartesianToPolar(body.position)},{Vector3.Magnitude(sys.bounds)}");
-				//Console.WriteLine(min_log);
-				ctx.Fill();
+				Vector3 lastPath = Vector3.zero;
+				try {
+					lastPath = paths[i][0];
+				} catch (ArgumentOutOfRangeException) {};
+				for (int j = -1; j < paths[i].Count; j++) {
+					
+					Vector3 true_position;
+					if (j == -1) true_position = body.position - sys.origin;
+					else true_position = paths[i][j];
+					Vector3 pos;
+					if (logarithmic) {
+						var log_pos = Vector3.Log(true_position, log_base);
+						pos = log_pos - min_log*Vector3.Unit(log_pos);
+					} else {
+						pos = Transforms.Perspective(true_position,camera);
+					}
+					var cl = body.reflectivity;//Vector3.zero;
+					//if (body.name != "Sol") {
+						//cl = Contrast(body.reflectivity);
+					//} else {
+					//	cl = Vector3.zero;
+					//}
+				
+					ctx.SetSourceRGB (255*cl.x,255*cl.y,255*cl.z);
+					if (j == -1) {
+						ctx.Arc(pos.x,pos.y,r,0,2*Math.PI);
+						ctx.Fill();
+					}
+					else if (j > 0) {
+						ctx.MoveTo(lastPath.x,lastPath.y);
+						ctx.LineTo(pos.x,pos.y);
+						ctx.Stroke();
+					} lastPath = pos;
+
+				}
+				paths[i].Add(body.position - sys.origin);
+				if (paths[i].Count > line_max) {
+					paths[i].RemoveAt(0);
+				}
 			}
 			return true;
 		}
