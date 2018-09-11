@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using static Constants;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 namespace Structures
 {
 	public class Vector3 {
@@ -111,12 +112,38 @@ namespace Structures
 				Math.Cos(x)*Math.Cos(y)
 			);
 		}
+		public static Matrix3 XRotation(double x) {
+			return new Matrix3 (
+				new Vector3(1,0,0),
+				new Vector3(0,Math.Cos(x),Math.Sin(x)),
+				new Vector3(0,-Math.Sin(x),Math.Cos(x))
+			);
+		}
+		public static Matrix3 YRotation(double y) {
+			return new Matrix3 (
+				new Vector3(Math.Cos(y),0,Math.Sin(y)),
+				new Vector3(0,1,0),
+				new Vector3(-Math.Sin(y),0,Math.Cos(y))
+			);
+		}
 		public static Matrix3 ZRotation(double z) {
 			return new Matrix3 (
 				new Vector3(Math.Cos(z),-Math.Sin(z),0),
 				new Vector3(Math.Sin(z),Math.Cos(z),0),
 				new Vector3(0,0,1)
 			);
+		}
+		public static Matrix3 ExtrinsicZYXRotation(double x, double y, double z) {
+			return XRotation(x)*YRotation(y)*ZRotation(z);
+		}
+		public static Matrix3 ExtrinsicZYXRotation(Vector3 v) {
+			return XRotation(v.x)*YRotation(v.y)*ZRotation(v.z);
+		}
+		public static Matrix3 IntrinsicZYXRotation(double x, double y, double z) {
+			return ZRotation(z)*YRotation(y)*XRotation(x);
+		}
+		public static Matrix3 IntrinsicZYXRotation(Vector3 v) {
+			return ZRotation(v.z)*YRotation(v.y)*XRotation(v.x);
 		}
 		public override String ToString() {
 			return $"Matrix3( {x.x} {x.y} {x.z}\n         {y.x} {y.y} {y.z}\n         {z.x} {z.y} {z.z} )";
@@ -332,6 +359,7 @@ namespace Structures
 		public Task center_task {get; private set;}
 		CancellationTokenSource center_task_source;
 		CancellationToken center_task_token;
+		public Vector3 origin {get; private set;} = Vector3.zero;
 		public Vector3 bounds {get; set;}
 		public PlanetarySystem(List<Body> bodies = null) {
 			if (bodies == null) this.bodies = new List<Body>();
@@ -340,20 +368,22 @@ namespace Structures
 		public void Add(Body body) {
 			bodies.Add(body);
 		}
-		public void ReCenter(Body center) {
-			Vector3 p = center.position;
-			Vector3 v = center.velocity;
-			foreach (Body b in this.bodies) {
-				b.position -= p;
-				b.velocity -= v;
-			}
+		public void ReCenter(Vector3 position) {
+			origin = position;
 		}
 		public void ReCenterLocked(int interval, Body center) {
 			center_task_source = new CancellationTokenSource();
 			center_task_token = center_task_source.Token;
 			center_task = Task.Run(() => {
 				while (true) {
-					ReCenter(center);
+					if (center == null) {
+						//his.Stop();
+						ReCenter(this.Barycenter());
+						//Program.mechanics = this.StartNoReturn(Program.STEP,false)
+					} else {
+						//Console.WriteLine(center.name);
+						ReCenter(center.position);
+					}
 					if (interval != 0) Thread.Sleep(interval);
 					if (center_task_token.IsCancellationRequested) {
 						break;
@@ -365,6 +395,15 @@ namespace Structures
 			if (center_task_source != null) {
 				center_task_source.Cancel();
 			}
+		}
+		public Vector3 Barycenter() {
+			Vector3 weighted_center = Vector3.zero;
+			double mu_total = 0;
+			foreach (Body b in this.bodies) {
+				mu_total += b.stdGrav;
+				weighted_center += b.stdGrav*b.position;
+			}
+			return weighted_center/mu_total;
 		}
 		protected Vector3[] GetAcceleration() {
 			Vector3[] acceleration = new Vector3[this.bodies.Count];
