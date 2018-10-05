@@ -16,7 +16,7 @@ namespace Structures {
 				position = Vector3.zero,
 				velocity = Vector3.zero,
 	 			luminositySpectrum = new Vector3(1,1,1), // Change this to get good brightness across all planets
-				reflectivity = new Vector3(0,1,0)
+				reflectivity = new Vector3(1,1,0)
 			};
 			solar_system = new PlanetarySystem(new List<Body>() {
 				// All radii are multiplied by 100

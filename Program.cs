@@ -13,6 +13,7 @@ using static Input;
 
 class Program {
 	public static PlanetarySystem activesys;
+	public static SystemView sys_view;
 	public static Task mechanics;
 	public static double STEP = 100;
 	
@@ -80,17 +81,21 @@ class Program {
 						STEP = 1;
 					}
 				}
-				mechanics = Task.Run(() => solar_system.StartNoReturn(step: STEP, verbose: false));
 				Application.Init();
+				Gtk.Window inputWindow = new Gtk.Window("Input");
+				mechanics = Task.Run(() => solar_system.StartNoReturn(step: STEP, verbose: false));
+
 				Gtk.Window mainWindow = new Gtk.Window("Astrodynamics Simulation");
 				mainWindow.SetDefaultSize(1280,720);
+				mainWindow.Events |= EventMask.PointerMotionMask | EventMask.ScrollMask;
 				mainWindow.DeleteEvent += delegate { Application.Quit (); };
 				mainWindow.KeyPressEvent += Input.KeyPress;
+				mainWindow.MotionNotifyEvent += Input.MouseMovement;
+				mainWindow.ScrollEvent += Input.Scroll;
 				var lg = false;
 				foreach (String s2 in args) {
 					if (s2 == "--logarithmic-position") lg = true;
 				}
-				SystemView sys_view;
 				if (lg) {
 					sys_view = new SystemView(solar_system) {
 						logarithmic = true,
@@ -100,8 +105,8 @@ class Program {
 					sys_view = new SystemView(solar_system);
 					foreach (String s2 in args) {
 						if (s2 == "--inner") {
-							sys_view.camera = new Camera(1*AU,new Vector3(80*deg,20*deg,0));
-							sys_view.radius_multiplier = 2;
+							sys_view.camera = new Camera(50*AU,new Vector3(80*deg,20*deg,0));
+							sys_view.radius_multiplier = 4;
 							sys_view.line_multiplier = 0.8;
 							sys_view.bounds_multiplier = 1;
 							sys_view.perspective_scale = 0.5;
