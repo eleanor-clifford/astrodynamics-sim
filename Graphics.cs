@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Gtk;
 using Cairo;
 using Structures;
@@ -32,9 +33,10 @@ namespace Graphics {
 		public double bounds_multiplier {get; set;} = 0.5;
 		public double radius_multiplier {get; set;} = 10;
 		public double line_multiplier {get; set;} = 0.8;
-		public double perspective_scale = 0.2;
-		public int line_max {get; set;} = 150;
+		public double perspective_scale = 1;
+		public int line_max {get; set;} = 100;
 		private List<Vector3>[] paths;
+		private int[] order;
 		public void Redraw() {
 			started = false;
 		}
@@ -43,6 +45,10 @@ namespace Graphics {
 			ctx.Paint();
 			ctx.Translate(AllocatedWidth/2,AllocatedHeight/2);
 			ctx.Scale(0.5,0.5);
+			if (!started) {
+				order = new int[sys.bodies.Count];
+				for (int i = 0; i < sys.bodies.Count; i++) order[i] = i;
+			}
 			if (logarithmic) {
 				if (!started) {
 					min_log = 9e99;
@@ -60,47 +66,47 @@ namespace Graphics {
 				if (!started) {
 					max = 0;
 					foreach (Body b in sys.bodies) {
-						var p = Vector3.Magnitude(Transforms.Perspective(b.position - sys.origin,camera));
-						var v = Transforms.Perspective(b.position - sys.origin,camera);
+						var p = Vector3.Magnitude(Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera));
+						var v = Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera);
 						if (p > max) {
 							max = p;
 						}
 					}
 					started = true;
-					bounds = bounds_multiplier * max * new Vector3(1,1,1);
-				}
+				} bounds = bounds_multiplier * max * new Vector3(1,1,1);
 			}
 			var scale = Math.Min(AllocatedWidth/bounds.x,AllocatedHeight/bounds.y);
 			ctx.Scale(scale,scale);
 			if (paths == null) {
 				paths = new List<Vector3>[sys.bodies.Count];
 				for (int i = 0; i < sys.bodies.Count; i++) {
-					paths[i] = new List<Vector3>();
+					paths[order[i]] = new List<Vector3>();
 				}
 			}
+			order = order.OrderByDescending(x => Vector3.Magnitude(sys.bodies[x].position - camera.position)).ToArray();
 			for (int i = 0; i < sys.bodies.Count; i++) {
-				Body body = sys.bodies[i];
+				Body body = sys.bodies[order[i]];
 				var r = radius_multiplier * body.radius * Math.Pow((Vector3.Magnitude(camera.position) / Vector3.Magnitude(body.position - camera.position)),perspective_scale);
-				ctx.LineWidth = line_multiplier * r;
+				ctx.LineWidth = line_multiplier * radius_multiplier * body.radius;
 				if (logarithmic) {
 				//	r = Math.Log(body.radius/100,log_base)/100;
 					r = body.radius*1e5;
 				}
 				Vector3 lastPath = Vector3.zero;
 				try {
-					lastPath = paths[i][0];
+					lastPath = paths[order[i]][0];
 				} catch (ArgumentOutOfRangeException) {};
-				for (int j = -1; j < paths[i].Count; j++) {
+				for (int j = -1; j < paths[order[i]].Count; j++) {
 					
 					Vector3 true_position;
-					if (j == -1) true_position = body.position - sys.origin;
-					else true_position = paths[i][j];
+					if (j == -1) true_position = body.position;
+					else true_position = paths[order[i]][j];
 					Vector3 pos;
 					if (logarithmic) {
 						var log_pos = Vector3.Log(true_position, log_base);
 						pos = log_pos - min_log*Vector3.Unit(log_pos);
 					} else {
-						pos = Transforms.Perspective(true_position,camera);
+						pos = Transforms.Perspective(true_position,camera) - Transforms.Perspective(sys.origin,camera);
 					}
 					var cl = body.reflectivity;//Vector3.zero;
 					//if (body.name != "Sol") {
@@ -121,9 +127,9 @@ namespace Graphics {
 					} lastPath = pos;
 
 				}
-				paths[i].Add(body.position - sys.origin);
-				if (paths[i].Count > line_max) {
-					paths[i].RemoveAt(0);
+				paths[order[i]].Add(body.position);
+				if (paths[order[i]].Count > line_max) {
+					paths[order[i]].RemoveAt(0);
 				}
 			}
 			return true;
