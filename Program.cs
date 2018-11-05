@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Structures;
 using Mechanics;
+using StartupScreen;
 using static Constants;
 using Gtk;
 using Gdk;
@@ -11,11 +12,11 @@ using Cairo;
 using Graphics;
 using static Input;
 
-class Program {
+static class Program {
 	public static PlanetarySystem activesys;
 	public static SystemView sys_view;
 	public static Task mechanics;
-	public static double STEP = 100;
+	public static double STEP = -1;
 	
 	static void Main(string[] args) {
 		foreach (string s in args) {
@@ -82,9 +83,19 @@ class Program {
 					}
 				}
 				Application.Init();
-				Gtk.Window inputWindow = new Gtk.Window("Input");
+				
+				var inputWindow = new Gtk.Window("Input");
+				inputWindow.SetDefaultSize(300,400);
+				var menu = new StartupScreen.Menu();
+				inputWindow.Add(menu.box);
+				inputWindow.DeleteEvent += delegate { Application.Quit (); };
+				inputWindow.ShowAll();
+				Task app = Task.Run(() => Application.Run());
+				while (Program.STEP == -1) continue;//Console.WriteLine(STEP); // Waiting for input window to close and variables to be set
+				Console.WriteLine("hi");
+				
+				
 				mechanics = Task.Run(() => solar_system.StartNoReturn(step: STEP, verbose: false));
-
 				Gtk.Window mainWindow = new Gtk.Window("Astrodynamics Simulation");
 				mainWindow.SetDefaultSize(1280,720);
 				mainWindow.Events |= EventMask.PointerMotionMask | EventMask.ScrollMask;
@@ -117,7 +128,8 @@ class Program {
 				Task.Run(() => sys_view.Play(0));
 				Program.activesys.ReCenterLocked(INTERVAL,null);
 				mainWindow.ShowAll();
-				Application.Run();
+				//inputWindow.Destroy();
+				app.Wait();
 			}
 		}
 	}
