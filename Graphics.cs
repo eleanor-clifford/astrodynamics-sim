@@ -38,43 +38,23 @@ namespace Graphics {
 		private List<Vector3>[] paths;
 		private int[] order;
 		public void Redraw() {
-			started = false;
+			order = new int[sys.bodies.Count];
+			for (int i = 0; i < sys.bodies.Count; i++) order[i] = i;
+			max = 0;
+			foreach (Body b in sys.bodies) {
+				var p = Vector3.Magnitude(Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera));
+				var v = Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera);
+				if (p > max) {
+					max = p;
+				}
+			} 
 		}
 		protected override bool OnDrawn (Cairo.Context ctx) {
 			ctx.SetSourceRGB(0,0,0);
 			ctx.Paint();
 			ctx.Translate(AllocatedWidth/2,AllocatedHeight/2);
 			ctx.Scale(0.5,0.5);
-			if (!started) {
-				order = new int[sys.bodies.Count];
-				for (int i = 0; i < sys.bodies.Count; i++) order[i] = i;
-			}
-			if (logarithmic) {
-				if (!started) {
-					min_log = 9e99;
-					foreach (Body b in sys.bodies) {
-						var p = b.position - sys.origin;
-						if (b.name == "Sol") continue;
-						if (Math.Log(Vector3.Magnitude(p),log_base) < min_log) {
-							min_log = Math.Log(Vector3.Magnitude(p),log_base);
-						}
-					}
-					started = true; 
-				} 
-				bounds = 0.5*Vector3.Log(sys.bounds, log_base);
-			} else {
-				if (!started) {
-					max = 0;
-					foreach (Body b in sys.bodies) {
-						var p = Vector3.Magnitude(Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera));
-						var v = Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera);
-						if (p > max) {
-							max = p;
-						}
-					}
-					started = true;
-				} bounds = bounds_multiplier * max * new Vector3(1,1,1);
-			}
+			bounds = bounds_multiplier * max * new Vector3(1,1,1);
 			var scale = Math.Min(AllocatedWidth/bounds.x,AllocatedHeight/bounds.y);
 			ctx.Scale(scale,scale);
 			if (paths == null) {
@@ -160,6 +140,7 @@ namespace Graphics {
 		}
 		public SystemView(PlanetarySystem sys) {
 			this.sys = sys;
+			Redraw();
 		}
 	}
 }

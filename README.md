@@ -8,7 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Install the dotnet core compiler. Instructions [here](https://docs.microsoft.com/en-us/dotnet/core/tools/?tabs=netcore2x).
+Install mono, including gtk#
 
 ### Running the tests
 
