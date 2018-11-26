@@ -285,7 +285,7 @@ namespace Structures
 		public Vector3 velocity {get; set;} = Vector3.zero;
 		public Vector3 angleReference { get; protected set;} = Vector3.i;
 		public Vector3 luminositySpectrum {get; set;} = Vector3.zero;
-		public Vector3 reflectivity {get; set;} = Vector3.zero;
+		public Vector3 reflectivity {get; set;} = new Vector3(1,1,1);
 		public Body (
 			Body parent = null, 
 			double semimajoraxis = 0, 
