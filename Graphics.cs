@@ -26,10 +26,6 @@ namespace Graphics {
 		public PlanetarySystem sys {get; private set;}
 		bool playing = false;
 		private Vector3 bounds;
-		public bool logarithmic {get; set;} = false;
-		public double log_base {get; set;} = 1.5;
-		private bool started {get; set;} = false;
-		private double min_log;
 		public Camera camera {get; set;} = new Camera(1*AU,new Vector3(80*deg,20*deg,0));
 		public double bounds_multiplier {get; set;} = 0.5;
 		public double radius_multiplier {get; set;} = 10;
@@ -44,7 +40,6 @@ namespace Graphics {
 			max = 0;
 			foreach (Body b in sys.bodies) {
 				var p = Vector3.Magnitude(Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera));
-				var v = Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera);
 				if (p > max) {
 					max = p;
 				}

@@ -15,7 +15,6 @@ using static Input;
 static class Program {
 	public static PlanetarySystem activesys;
 	public static SystemView sys_view;
-	public static Task mechanics;
 	public static double STEP;
 	public static List<Boolean> RadioOptions;
 	public static List<Body> CustomBodies = new List<Body>();
