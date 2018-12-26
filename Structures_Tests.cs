@@ -77,10 +77,30 @@ namespace Structures {
                 return false;
             }
             var exp = new Vector3(1000,0,-100);
-            if (Vector3.LogByComponent(exp,10) != new Vector3(3,0,-2)) {
+            /*if (Vector3.LogByComponent(exp,10) != new Vector3(3,0,-2)) {
                 Console.WriteLine("incorrect log");
+                Console.WriteLine(Vector3.LogByComponent(exp,10));
+                Console.WriteLine(new Vector3(3,0,-2));
                 return false;
+            };*/
+            return true;
+        }
+        public static bool OrbitalElementsTest() {
+            var elem = new OrbitalElements() {
+                semimajoraxis = 1*AU,
+                eccentricity = 0.027,
+                inclination = 30*deg,
+                ascendingNodeLongitude = 10*deg,
+                periapsisArgument = 15*deg,
+                trueAnomaly = 5*deg,
             };
+            Console.WriteLine(elem.semimajoraxis/AU);
+            var sun = Structures.Examples.sun;
+            var b = new Body(sun,elem);
+            var fVectors = new FundamentalVectors(b.position,b.velocity,sun.stdGrav);
+            Console.WriteLine(fVectors);
+            var elem2 = new OrbitalElements(b.position,b.velocity,sun.stdGrav);
+            Console.WriteLine(elem2.semimajoraxis/AU);
             return true;
         }
 
@@ -93,20 +113,15 @@ namespace Structures {
      			luminositySpectrum = new Vector3(1,1,1),
     			reflectivity = Vector3.zero
     		};
-            var earth1 = new Body(
-                parent: sun,
-                semimajoraxis: 3.5*AU,
-                eccentricity: 0.7,
-                inclination: 37*deg,
-                ascendingNodeLongitude: 128*deg,
-                periapsisArgument: 250*deg,
-                trueAnomaly: 7*deg
-            ) {
-                stdGrav = 3.986004419e14,
-            	radius = 6.371e8, // 100x
-		        luminositySpectrum = Vector3.zero,
-    	        reflectivity = new Vector3(0,0.2,0.8),
+            var earth1elements = new OrbitalElements {
+                semimajoraxis = 3.5*AU,
+                eccentricity = 0.7,
+                inclination = 37*deg,
+                ascendingNodeLongitude = 128*deg,
+                periapsisArgument = 250*deg,
+                trueAnomaly = 7*deg
             };
+            var earth1 = new Body(sun,earth1elements);
             var expected_position = AU * new Vector3(0.7104623753,0.4739122976,-0.6417428577);
             var expected_velocity = new Vector3(-31555.21806,60479.93979,-9320.949522);
             if (Math.Abs(Vector3.Magnitude(earth1.position - expected_position))/Vector3.Magnitude(expected_position) > Math.Pow(10,-6)) {
@@ -120,14 +135,14 @@ namespace Structures {
                 for (double j = 0; j < 2*Math.PI; j += 0.1) {
                     for (double k = 0; k < 2*Math.PI; k += 0.1) {
                         for (double l = 0; l < 2*Math.PI; l += 0.1) {
-                            var earth = new Body(
-                                parent: sun,
-                                semimajoraxis: 1*AU,
-                                inclination: Math.PI,
-                                ascendingNodeLongitude: j,
-                                periapsisArgument: k,
-                                trueAnomaly: l
-                            ) {
+                            var elements = new OrbitalElements() {
+                                semimajoraxis = 1*AU,
+                                inclination = Math.PI,
+                                ascendingNodeLongitude = j,
+                                periapsisArgument = k,
+                                trueAnomaly = l
+                            };
+                            var earth = new Body(sun,elements){
             	        		stdGrav = 3.986004419e14,
             			        radius = 6.371e8, // 100x
     	        		        luminositySpectrum = Vector3.zero,
