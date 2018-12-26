@@ -98,7 +98,7 @@ namespace Structures
 			}//);
 		}
 		public void StartNoReturn(double step = 1, bool verbose = false) {
-			foreach (var b in Start(step,verbose)) { continue; }
+			Task.Run(() => {foreach (var b in Start(step,verbose)) continue;});
 		}
 		public IEnumerable<List<Body>> Start(double step = 1, bool verbose = false) {
 			this.running = true;
