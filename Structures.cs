@@ -264,20 +264,6 @@ namespace Structures
 			return (1/Matrix3.Determinant(m)) * C_T;
 		}
 	}
-	public class Plane {
-		// P = M(mu*i+lambda*j) + ck
-		public Matrix3 M {get; set;}
-		public double c {get; set;}
-		public Vector3 Normal() {
-			return M*Vector3.k;
-		}
-		public bool OnPlane(Vector3 p) {
-			Vector3 norm = p - M*Vector3.k;
-			Vector3 rot = Matrix3.Inverse(M) * norm;
-			if (rot.z == 0) return true;
-			else return false;
-		}
-	}
 	[Serializable()]
 	public class Body : ICloneable {
 		public string name {get; set;}
@@ -307,7 +293,7 @@ namespace Structures
 			){
 				throw new ArgumentException();
 			}
-			double semilatusrectum = elements.semimajoraxis*Math.Pow((1-elements.eccentricity),2);
+			double semilatusrectum = elements.semimajoraxis*(1-Math.Pow(elements.eccentricity,2));
 			// working in perifocal coordinates:
 			double mag_peri_radius = semilatusrectum/(1+elements.eccentricity*Math.Cos(elements.trueAnomaly));
 			Vector3 peri_radius = mag_peri_radius*new Vector3(Math.Cos(elements.trueAnomaly),Math.Sin(elements.trueAnomaly),0);
@@ -428,7 +414,6 @@ namespace Structures
 		public OrbitalElements(Vector3 position, Vector3 velocity, double stdGrav) {
 			var fVectors = new FundamentalVectors(position,velocity,stdGrav);
 			this.eccentricity = Vector3.Magnitude(fVectors.eccentricity);
-			var parameter = Math.Pow(Vector3.Magnitude(fVectors.angularMomentum),2)/stdGrav;
 			this.inclination = Math.Acos(fVectors.angularMomentum.z/Vector3.Magnitude(fVectors.angularMomentum)); // 0 <= i <= 180deg
 			var semilatusrectum = Math.Pow(Vector3.Magnitude(fVectors.angularMomentum),2)/stdGrav;
 			this.semimajoraxis = semilatusrectum/(1-Math.Pow(eccentricity,2));
