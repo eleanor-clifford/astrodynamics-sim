@@ -273,7 +273,6 @@ namespace Structures
 		public Vector3 position {get; set;} = Vector3.zero;
 		public Vector3 velocity {get; set;} = Vector3.zero;
 		public Vector3 angleReference { get; set;} = Vector3.i;
-		public Vector3 luminositySpectrum {get; set;} = Vector3.zero;
 		public Vector3 reflectivity {get; set;} = new Vector3(1,1,1);
 		public Body() {} // paramaterless constructor for serialisation
 		public Body (Body parent, OrbitalElements elements) {
@@ -329,49 +328,12 @@ namespace Structures
 			);
 			this.position = transform*peri_radius + parent.position;
 			this.velocity = transform*peri_velocity + parent.velocity;
-			/* OLD METHOD:
-			// derive some useful values
-			double periapsis = elements.semimajoraxis*(1-elements.eccentricity);
-			double apoapsis = elements.semimajoraxis*(1+elements.eccentricity);
-			// a^2 = b^2 + c^2 , a,b,c >= 0
-			// a is the semimajor axis, b the semiminor axis, and c the distance from the center to the foci
-			double semiminoraxis = Math.Sqrt(Math.Pow(elements.semimajoraxis,2) - Math.Pow(elements.semimajoraxis-periapsis,2));
-			
-			// Reference direction is the x axis and reference plane is xy
-			Vector3 reference = new Vector3(1,0,0);
-
-			// This is the transformation from the reference plane to the orbital plane.
-			// First incline the orbit, then move the ascending node.
-			Matrix3 transformation = Matrix3.ZRotation(elements.ascendingNodeLongitude) 
-			                       * new Matrix3(elements.inclination,0);
-			// The equation of the ellipse in the reference plane is
-			// r = (a*cos(anomaly) + r_p - a, b*sin(anomaly),0)
-			// with the parent body at the origin
-			Vector3 referencePosition = new Vector3(elements.semimajoraxis*Math.Cos(elements.trueAnomaly) + periapsis - elements.semimajoraxis,
-			                                        semiminoraxis*Math.Sin(elements.trueAnomaly),0);
-			// To get the true position we rotate the ellipse in the reference plane according to
-			// The argument of periapsis, then apply the transformation to the orbital plane
-			Vector3 truePosition = parent.position + transformation * Matrix3.ZRotation(elements.periapsisArgument) * referencePosition;
-			
-			// |v| = sqrt(mu(2/r - 1/a))
-			double orbitalSpeed = Math.Sqrt(parent.stdGrav*(2/Vector3.Magnitude(referencePosition) - 1/elements.semimajoraxis));
-			// dy/dx = -b/a cot v
-			Vector3 referenceVelocity;
-			if (elements.trueAnomaly == 0) {
-				referenceVelocity = new Vector3(0, orbitalSpeed, 0);
-			} else if (elements.trueAnomaly == Math.PI) {
-				referenceVelocity = new Vector3(0, -orbitalSpeed, 0);
-			} else if (elements.trueAnomaly > 0 && elements.trueAnomaly < Math.PI) {
-				referenceVelocity = orbitalSpeed * Vector3.Unit(new Vector3(-1, (semiminoraxis/elements.semimajoraxis) * (1/Math.Tan(elements.trueAnomaly)),0));
-			} else {
-				referenceVelocity = orbitalSpeed * Vector3.Unit(new Vector3(1, -(semiminoraxis/elements.semimajoraxis) * (1/Math.Tan(elements.trueAnomaly)),0));
-			}
-			// Rotate by the argument of periapsis then apply the transformation to the orbital plane
-			Vector3 trueVelocity = transformation * Matrix3.ZRotation(elements.periapsisArgument) * referenceVelocity;
-			this.position = truePosition;
-			this.velocity = trueVelocity;
-			this.angleReference = transformation * Matrix3.ZRotation(elements.periapsisArgument) * Vector3.i;
-			*/
+		}
+		public double HillRadius() {
+			// This is the maximum distance anything can reasonably orbit at.
+			// It would normally depend on the bodies nearby, but we'll just do something simple
+			// which is roughly accurate for bodies in the solar system.
+			return this.stdGrav * 2e-6;
 		}
 		public object Clone() {
 			return new Body {
@@ -381,13 +343,11 @@ namespace Structures
 				radius = this.radius,
 				position = this.position,
 				velocity = this.velocity,
-				angleReference = this.angleReference,
-				luminositySpectrum = this.luminositySpectrum,
 				reflectivity = this.reflectivity
 			};
 		}
 	}
-	public class FundamentalVectors {
+	internal class FundamentalVectors {
 		public Vector3 angularMomentum {get; set;}
 		public Vector3 eccentricity {get; set;}
 		public Vector3 node {get; set;}
@@ -419,16 +379,26 @@ namespace Structures
 			this.semimajoraxis = semilatusrectum/(1-Math.Pow(eccentricity,2));
 			//TODO: fix parabola
 			double cosi = fVectors.angularMomentum.z/Vector3.Magnitude(fVectors.angularMomentum);
-			this.inclination = Math.Acos(cosi); // 0 << i << 180
-			double cosAscNodeLong = fVectors.node.x/Vector3.Magnitude(fVectors.node);
-			if (fVectors.node.y > 0) this.ascendingNodeLongitude = Math.Acos(cosAscNodeLong);
-			else this.ascendingNodeLongitude = 2*Math.PI - Math.Acos(cosAscNodeLong);
-			double cosPeriArg = Vector3.UnitDot(fVectors.node,fVectors.eccentricity);
-			if (fVectors.eccentricity.z > 0) this.periapsisArgument = Math.Acos(cosPeriArg);
-			else this.periapsisArgument = 2*Math.PI - Math.Acos(cosPeriArg);
+			this.inclination = Math.Acos(cosi); // 0 < i < 180
+			if (fVectors.node == Vector3.zero) {
+				this.ascendingNodeLongitude = 0;
+				this.periapsisArgument = 0;
+			} else {
+				double cosAscNodeLong = fVectors.node.x/Vector3.Magnitude(fVectors.node);
+				//Console.WriteLine(this.ascendingNodeLongitude);
+				if (fVectors.node.y >= 0) this.ascendingNodeLongitude = Math.Acos(cosAscNodeLong);
+				else this.ascendingNodeLongitude = 2*Math.PI - Math.Acos(cosAscNodeLong);
+				double cosPeriArg = Vector3.UnitDot(fVectors.node,fVectors.eccentricity);
+				if (fVectors.eccentricity.z >= 0) this.periapsisArgument = Math.Acos(cosPeriArg);
+				else this.periapsisArgument = 2*Math.PI - Math.Acos(cosPeriArg);
+			}
 			var cosAnomaly = Vector3.UnitDot(fVectors.eccentricity,position);
-			if (Vector3.UnitDot(position,velocity) > 0) this.trueAnomaly = Math.Acos(cosAnomaly);
+			if (Vector3.UnitDot(position,velocity) >= 0) this.trueAnomaly = Math.Acos(cosAnomaly);
 			else this.trueAnomaly = 2*Math.PI - Math.Acos(cosAnomaly);
+
+			if (this.ascendingNodeLongitude >= 2*Math.PI) this.ascendingNodeLongitude -= 2*Math.PI;
+			if (this.periapsisArgument >= 2*Math.PI) this.periapsisArgument -= 2*Math.PI;
+			if (this.trueAnomaly >= 2*Math.PI) this.trueAnomaly -= 2*Math.PI;
 		}
 	}
 }

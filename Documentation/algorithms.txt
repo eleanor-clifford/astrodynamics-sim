@@ -19,12 +19,6 @@ class Matrix3:
 	methods:
 		Matrix operations
 		Rotation(x,y): returns a rotation matrix described by a rotation on the x axis followed by a rotation on the y axis
-class Plane: (M(ai + bj) + ck)
-	fields:
-		rotation (Matrix3)
-		c (double)
-	methods:
-		Normal(Plane): returns the unit vector normal axis of the plane
 class Body:
 	fields:
 		standard gravitational parameter (m^3 s^-2)
