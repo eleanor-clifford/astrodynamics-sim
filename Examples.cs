@@ -5,18 +5,18 @@ using Structures;
 using static Constants;
 namespace Structures {
 	static class Examples {
-		public static Body sun;
-		public static PlanetarySystem solar_system;
-		public static List<OrbitalElements> solar_system_elements;
-		public static PlanetarySystem inner_solar_system;
+		public static Body sun {get; private set;}
+		public static PlanetarySystem solar_system {get; private set;}
+		public static List<OrbitalElements> solar_system_elements {get; private set;}
+		public static List<Body> solar_system_bodies {get; private set;}
+		public static PlanetarySystem inner_solar_system {get; private set;}
 		static Examples() {
 			sun = new Body() {
 				name = "Sol",
 				stdGrav = 1.32712440018e20,
-				radius = 24622e5,//6.96342e9,
+				radius = 696342e3/5, // 5x smaller than normal for viewabilty
 				position = Vector3.zero,
 				velocity = Vector3.zero,
-	 			luminositySpectrum = new Vector3(1,1,1), // Change this to get good brightness across all planets
 				reflectivity = new Vector3(1,1,0)
 			};
 			solar_system_elements = new List<OrbitalElements>() {
@@ -104,6 +104,63 @@ namespace Structures {
 					trueAnomaly = 238.92881*deg
 				}*/
 			};
+			solar_system_bodies = new List<Body>() {
+				(Body)sun.Clone(),
+				new Body() {
+					name = "Mercury",
+					stdGrav = 2.2033e13,
+					radius = 2439.7e3,
+					reflectivity = new Vector3(0.5604629613577541,0.5506810776290613,0.5615709550944886)
+				},
+				new Body() {
+					name = "Venus",
+					stdGrav = 3.24860e14,
+					radius = 6051.8e3,
+					reflectivity = new Vector3(0.7290057613658241,0.7163768245238121,0.6791579213171579)
+				},
+				new Body() {
+					name = "Earth",
+					stdGrav = 3.986004419e14,
+					radius = 6371.0e3,
+					reflectivity = new Vector3(0.36141510867913057,0.3805593555251558,0.4684865790976585)
+				},
+				new Body() {
+					name = "Mars",
+					stdGrav = 4.282837e13,
+					radius = 3389.5e3,
+					reflectivity = new Vector3(0.5128845217545257,0.3367414685964679,0.2022838932412694)
+				},
+				new Body() {
+					name = "Jupiter",
+					stdGrav = 1.26686535e17,
+					radius = 69911e3,
+					reflectivity = new Vector3(0.7189596667682617,0.6638891549711422,0.6361916372766723)
+				},
+				new Body() {
+					name = "Saturn",
+					stdGrav = 3.7931188e16,
+					radius = 58232e3,
+					reflectivity = new Vector3(0.8246372253577235,0.7470193676770795,0.59518943574319)
+				},
+				new Body() {
+					name = "Uranus",
+					stdGrav = 5.793940e15,
+					radius = 25362e3,
+					reflectivity = new Vector3(0.565224110171928,0.7359458915531022,0.8092590995342418)
+				},
+				new Body() {
+					name = "Neptune",
+					stdGrav = 6.836530e15,
+					radius = 24622e3,
+					reflectivity = new Vector3(0.5525244704623422,0.7383866805149026,0.868736820570925)
+				},/*
+				new Body() {
+					name = "Pluto",
+					stdGrav = 8.72e11,
+					radius = 1186e3,
+					reflectivity = new Vector3(0.732870760490961,0.6071190239708979,0.4988704626052213)
+				}*/
+			};
 			solar_system = new PlanetarySystem(new List<Body>() {
 				// All radii are multiplied by 100
 				// Colors from https://planetarium.madison.k12.wi.us/planets-true.htm
@@ -112,58 +169,58 @@ namespace Structures {
 				new Body(sun, solar_system_elements[0]) {
 					name = "Mercury",
 					stdGrav = 2.2033e13,
-					radius = 2439.7e5,
+					radius = 2439.7e3,
 					reflectivity = new Vector3(0.5604629613577541,0.5506810776290613,0.5615709550944886)
 				},
 				new Body(sun, solar_system_elements[1]) {
 					name = "Venus",
 					stdGrav = 3.24860e14,
-					radius = 6051.8e5,
+					radius = 6051.8e3,
 					reflectivity = new Vector3(0.7290057613658241,0.7163768245238121,0.6791579213171579)
 				},
 				new Body(sun, solar_system_elements[2]) {
 					name = "Earth",
 					stdGrav = 3.986004419e14,
-					radius = 6371.0e5,
+					radius = 6371.0e3,
 					reflectivity = new Vector3(0.36141510867913057,0.3805593555251558,0.4684865790976585)
 				},
 				new Body(sun, solar_system_elements[3]) {
 					name = "Mars",
 					stdGrav = 4.282837e13,
-					radius = 3389.5e5,
+					radius = 3389.5e3,
 					reflectivity = new Vector3(0.5128845217545257,0.3367414685964679,0.2022838932412694)
 				},
 				new Body(sun, solar_system_elements[4]) {
 					name = "Jupiter",
 					stdGrav = 1.26686535e17,
-					radius = 69911e5,
+					radius = 69911e3,
 					reflectivity = new Vector3(0.7189596667682617,0.6638891549711422,0.6361916372766723)
 				},
 				new Body(sun, solar_system_elements[5]) {
 					name = "Saturn",
 					stdGrav = 3.7931188e16,
-					radius = 58232e5,
+					radius = 58232e3,
 					reflectivity = new Vector3(0.8246372253577235,0.7470193676770795,0.59518943574319)
 				},
 				new Body(sun, solar_system_elements[6]) {
 					name = "Uranus",
 					stdGrav = 5.793940e15,
-					radius = 25362e5,
+					radius = 25362e3,
 					reflectivity = new Vector3(0.565224110171928,0.7359458915531022,0.8092590995342418)
 				},
 				new Body(sun, solar_system_elements[7]) {
 					name = "Neptune",
 					stdGrav = 6.836530e15,
-					radius = 24622e5,
+					radius = 24622e3,
 					reflectivity = new Vector3(0.5525244704623422,0.7383866805149026,0.868736820570925)
 				},/*
 				new Body(sun, solar_system_elements[8]) {
 					name = "Pluto",
 					stdGrav = 8.72e11,
-					radius = 1186e5,
+					radius = 1186e3,
 					reflectivity = new Vector3(0.732870760490961,0.6071190239708979,0.4988704626052213)
 				}*/
-			}) { bounds = 50*AU*new Vector3(1,1,1) };
+			});
 			inner_solar_system = new PlanetarySystem(solar_system.bodies.Take(5).ToList());
 		}
 	}

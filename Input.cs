@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 using Structures;
-using Mechanics;
 using static Constants;
 using Gtk;
 using Gdk;
@@ -15,9 +15,12 @@ static class Input {
     private static bool canMove = false;
     private static Vector3 rootPos = null;
     private static Vector3 rootAngle = null;
-    public static int INTERVAL = 5;
+    public static int INTERVAL = 0;
     public static double mouse_sensitivity {get; set;} = 1;
-    public static double scroll_sensitivity {get; set;} = 0.01;
+    public static double scroll_sensitivity {get; set;} = 1.1;
+    public static double time_sensitivity = 1.2;
+    public static double radius_sensitivity = 1.1;
+    public static int line_sensitivity = 5;
     [GLib.ConnectBefore]
 	public static void KeyPress(object sender, KeyPressEventArgs args) {
 		if (args.Event.Key == Gdk.Key.f) {
@@ -36,13 +39,48 @@ static class Input {
                 else Program.activesys.ReCenterLocked(INTERVAL,null);
             }
             args.RetVal = true;
-        }
-		if (args.Event.Key == Gdk.Key.l) {
+        } else if (args.Event.Key == Gdk.Key.l) {
             canMove = !canMove;
             if (!canMove) {
                 rootPos = null;
             }
+        } else if (args.Event.Key == Gdk.Key.Up) {
+            Program.sys_view.radius_multiplier *= radius_sensitivity;
+        } else if (args.Event.Key == Gdk.Key.Down) {
+            Program.sys_view.radius_multiplier /= radius_sensitivity;
+        } else if (args.Event.Key == Gdk.Key.Right) {
+            Program.activesys.Stop();
+            Program.STEP *= time_sensitivity;
+            Console.WriteLine(Program.STEP);
+            Program.activesys.StartAsync(step: Program.STEP);
+        } else if (args.Event.Key == Gdk.Key.Left) {
+            Program.activesys.Stop();
+            Program.STEP /= time_sensitivity;
+            Console.WriteLine(Program.STEP);
+            Program.activesys.StartAsync(step: Program.STEP);
+        } else if (args.Event.Key == Gdk.Key.KP_0) {
+            Program.sys_view.line_max -= line_sensitivity;
+        } else if (args.Event.Key == Gdk.Key.KP_1) {
+            Program.sys_view.line_max += line_sensitivity;
+        } else if (args.Event.Key == Gdk.Key.Escape) {
+            Console.WriteLine(Program.activesys.bodies.Count);
+            Program.activesys.UnlockCenter();
+            Program.sys_view.Stop();
+            Program.activesys.Stop();
+            Program.mainWindow.Destroy();
+            
+            var menu = new StartupScreen.Menu();
+            var data = new StartupScreen.SaveData() {
+                bodies = Program.activesys.bodies,
+                centers = Program.CustomCenters,
+                STEP = Program.STEP,
+                radius_multiplier = Program.sys_view.radius_multiplier,
+                line_max = Program.sys_view.line_max
+            };
+            menu.temp_savedata = data;
+            menu.loadButton.Click();
         }
+
 	}
     [GLib.ConnectBefore]
     public static void MouseMovement(Object sender, MotionNotifyEventArgs args) {
@@ -59,9 +97,9 @@ static class Input {
     [GLib.ConnectBefore]
     public static void Scroll(Object sender, ScrollEventArgs args) {
         if (args.Event.Direction == Gdk.ScrollDirection.Up) {
-            Program.sys_view.bounds_multiplier -= scroll_sensitivity;
+            Program.sys_view.bounds_multiplier /= scroll_sensitivity;
         } else if (args.Event.Direction == Gdk.ScrollDirection.Down) {
-            Program.sys_view.bounds_multiplier += scroll_sensitivity;
+            Program.sys_view.bounds_multiplier *= scroll_sensitivity;
         }
     }
 }

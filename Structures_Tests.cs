@@ -104,7 +104,6 @@ namespace Structures {
     			radius = 6.95e10, // 100x
     			position = Vector3.zero,
     			velocity = Vector3.zero,
-     			luminositySpectrum = new Vector3(1,1,1),
     			reflectivity = Vector3.zero
     		};
             var earthElements = new OrbitalElements {
@@ -153,7 +152,6 @@ namespace Structures {
                             var earth = new Body(sun,elements){
             	        		stdGrav = 3.986004419e14,
             			        radius = 6.371e8, // 100x
-    	        		        luminositySpectrum = Vector3.zero,
     		        	        reflectivity = new Vector3(0,0.2,0.8),
     		                };
                             if (!(Math.Abs(Vector3.Magnitude(earth.velocity) - 3e4) < 1e3 )) {
