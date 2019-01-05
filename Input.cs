@@ -30,15 +30,15 @@ static class Input {
                 if (Program.activesys.center_index >= Program.activesys.centers.Count) {
                     Program.activesys.center_index = -1;
                 }
-                //Thread.Sleep(1000000);
-                Program.activesys.UnlockCenter();
-                if (Program.activesys.center_task != null) {
-                    Program.activesys.center_task.Wait();
-                }
-                if (Program.activesys.center_index != -1) Program.activesys.ReCenterLocked(INTERVAL,Program.activesys.bodies[Program.activesys.centers[Program.activesys.center_index]]);
-                else Program.activesys.ReCenterLocked(INTERVAL,null);
+                Program.sys_view.paths = new List<Vector3>[Program.activesys.bodies.Count];
+				for (int i = 0; i < Program.activesys.bodies.Count; i++) {
+					Program.sys_view.paths[i] = new List<Vector3>();
+				}
             }
             args.RetVal = true;
+        } else if (args.Event.Key == Gdk.Key.r) {
+            double d = Vector3.Magnitude(Program.sys_view.camera.position);
+            Program.sys_view.camera = new Camera(d,Vector3.zero);
         } else if (args.Event.Key == Gdk.Key.l) {
             canMove = !canMove;
             if (!canMove) {
@@ -51,20 +51,20 @@ static class Input {
         } else if (args.Event.Key == Gdk.Key.Right) {
             Program.activesys.Stop();
             Program.STEP *= time_sensitivity;
-            Console.WriteLine(Program.STEP);
             Program.activesys.StartAsync(step: Program.STEP);
         } else if (args.Event.Key == Gdk.Key.Left) {
             Program.activesys.Stop();
             Program.STEP /= time_sensitivity;
-            Console.WriteLine(Program.STEP);
             Program.activesys.StartAsync(step: Program.STEP);
-        } else if (args.Event.Key == Gdk.Key.KP_0) {
-            Program.sys_view.line_max -= line_sensitivity;
-        } else if (args.Event.Key == Gdk.Key.KP_1) {
+        } else if (args.Event.Key == Gdk.Key.Page_Down) {
+            // don't make it smaller than 0
+            if (Program.sys_view.line_max >= line_sensitivity) {
+                Program.sys_view.line_max -= line_sensitivity;
+            }
+        } else if (args.Event.Key == Gdk.Key.Page_Up) {
             Program.sys_view.line_max += line_sensitivity;
         } else if (args.Event.Key == Gdk.Key.Escape) {
             Console.WriteLine(Program.activesys.bodies.Count);
-            Program.activesys.UnlockCenter();
             Program.sys_view.Stop();
             Program.activesys.Stop();
             Program.mainWindow.Destroy();

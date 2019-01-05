@@ -23,32 +23,7 @@ namespace Structures
 		public void Add(Body body) {
 			bodies.Add(body);
 		}
-		public void ReCenter(Vector3 position) {
-			origin = position;
-		}
-		public void ReCenterLocked(int interval, Body center) {
-			center_task_source = new CancellationTokenSource();
-			center_task_token = center_task_source.Token;
-			center_task = Task.Run(() => {
-				while (true) {
-					if (center == null) {
-						ReCenter(this.Barycenter());
-					} else {
-						ReCenter(center.position);
-					}
-					if (interval != 0) Thread.Sleep(interval);
-					if (center_task_token.IsCancellationRequested) {
-						break;
-					}
-				}
-			},center_task_token);
-		}
-		public void UnlockCenter() {
-			if (center_task_source != null) {
-				center_task_source.Cancel();
-			}
-		}
-		protected Vector3 Barycenter() {
+		public Vector3 Barycenter() {
 			Vector3 weighted_center = Vector3.zero;
 			double mu_total = 0;
 			foreach (Body b in this.bodies) {
@@ -64,7 +39,8 @@ namespace Structures
 				acceleration[i] = Vector3.zero;
 			});
 			for (int i = 0; i < this.bodies.Count; i++) {
-				Body body1 = this.bodies[i]; // We will need the index later so foreach is not possible
+				// We will need the index later so foreach is not possible
+				Body body1 = this.bodies[i];
 				for (int j = i + 1; j < this.bodies.Count; j++) {
 					Body body2 = this.bodies[j]; // Again here
 					// The magnitude of the force, multiplied by G, = %mu_1 * %mu_2 / r^2

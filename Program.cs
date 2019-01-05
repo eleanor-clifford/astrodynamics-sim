@@ -92,7 +92,6 @@ static class Program {
 		mainWindow.Add(sys_view);
 		solar_system.StartAsync(step: STEP); // Start Mechanics
 		sys_view.PlayAsync(interval: 0); // Start Display
-		Program.activesys.ReCenterLocked(INTERVAL,null); // Lock camera
 		mainWindow.ShowAll();
 	}
 	

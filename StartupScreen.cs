@@ -28,7 +28,7 @@ namespace StartupScreen {
         public static List<Structures.Body> std_bodies = Examples.solar_system_bodies;
         internal static List<BodyBox> new_bodies = new List<BodyBox>();
         public SaveData temp_savedata = null;
-        public List<bool> centers = new List<bool>();
+        public static List<bool> centers = new List<bool>();
         
         public Menu(Gtk.WindowType s = Gtk.WindowType.Toplevel) : base(s) { // weird inheritancy stuff, don't change
             this.SetDefaultSize(300,400);
@@ -158,7 +158,7 @@ namespace StartupScreen {
             String bString = bCombo.ActiveText;
             if (bString != "Custom") {
                 var body = Examples.solar_system.bodies.First(b => b.name == bString);
-                if (!new_bodies.Exists(b => b.name.Text == body.parent.name)) {
+                if (!(body.parent == null || new_bodies.Exists(b => b.name.Text == body.parent.name))) {
                     body = std_bodies.First(b => b.name == bString);
                 }
                 bodyBox.body = body;
@@ -185,13 +185,23 @@ namespace StartupScreen {
             var bodies = new List<Body>();
             if (centers == null) centers = new List<bool>();
             centers.Clear();
+            var elements = new List<OrbitalElements>();
             foreach (BodyBox b in new_bodies) {
                 b.Set();
                 bodies.Add(b.body);
                 centers.Add(b.CenterButton.Active);
+                elements.Add(new OrbitalElements() {
+                    semimajoraxis = b.SMAScale.Value*AU,
+                    eccentricity = b.EScale.Value,
+                    inclination = b.IncScale.Value*deg,
+                    ascendingNodeLongitude = b.ANLScale.Value*deg,
+                    periapsisArgument = b.PAScale.Value*deg,
+                    trueAnomaly = b.TAScale.Value*deg
+                });
             }
             var data = new SaveData() {
                 bodies = bodies,
+                elements = elements,
                 STEP = TimestepScale.Value,
                 centers = centers,
                 radius_multiplier = RScale.Value,
@@ -224,13 +234,16 @@ namespace StartupScreen {
                         body = data.bodies[i],
                     };
                     bbox.CenterButton.Active = data.centers[i];
-                    bbox.ReverseSet();
+                    if (data.elements != null && data.elements.Count != 0) {
+                        bbox.SetElements(data.elements[i]);
+                        bbox.ReverseSet(false);
+                        //} catch {}
+                    } else bbox.ReverseSet();
                     new_bodies.Add(bbox);
                     systembox.PackStart(bbox, true, true, 3);
                 }
                 foreach (BodyBox b in new_bodies) {
                     b.ResetParents();
-                    b.ReverseSet();
                 }
 
                 this.radio4.Active = true;
@@ -266,17 +279,17 @@ namespace StartupScreen {
             MassScale = new Scale(Orientation.Vertical, 0.1,50,0.01);
             RadiusScale = new Scale(Orientation.Vertical, 0.1,1000000,0.1);
             SMAScale = new Scale(Orientation.Vertical, 0.1,50,0.01);
-            EScale = new Scale(Orientation.Vertical, 0,10,0.001);
+            EScale = new Scale(Orientation.Vertical, 0,3,0.001);
             IncScale = new Scale(Orientation.Vertical, 0,90,0.01);
-            ANLScale = new Scale(Orientation.Vertical, 0,360,0.01);
-            PAScale = new Scale(Orientation.Vertical, 0,360,0.01);
-            TAScale = new Scale(Orientation.Vertical, 0,360,0.01);
+            ANLScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
+            PAScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
+            TAScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
             RScale = new Scale(Orientation.Horizontal, 0, 1, 0.01);
             GScale = new Scale(Orientation.Horizontal, 0, 1, 0.01);
             BScale = new Scale(Orientation.Horizontal, 0, 1, 0.01);
             CenterButton = new CheckButton("Focusable");
-            DeleteButton = new Button("Delete");
-
+            //DeleteButton = new Button("Delete");
+            //DeleteButton.Clicked += new EventHandler(OnDeleteClick);
 
             parent.Changed += new EventHandler(OnParentChange);
             MassScale.Inverted = true;
@@ -307,7 +320,7 @@ namespace StartupScreen {
             this.PackStart(colorbox, true, true, 3);
             var optionsbox = new VBox(homogeneous: false, spacing: 3);
             optionsbox.PackStart(CenterButton, true, true, 3);
-            optionsbox.PackStart(DeleteButton, true, true, 3);
+            //optionsbox.PackStart(DeleteButton, true, true, 3);
             this.PackStart(optionsbox, true, true, 3);
 
         }
@@ -320,6 +333,14 @@ namespace StartupScreen {
                 this.SMAScale.SetRange(Math.Pow(10,-this.SMAScale.Digits),hillrad);
             } catch (NullReferenceException) {} // no parent, don't set values
         }
+        /*private void OnDeleteClick(object obj, EventArgs args) {
+            var index = Menu.new_bodies.IndexOf(this);
+            Menu.new_bodies.RemoveAt(index);
+            Console.WriteLine(Program.sys_view == null);
+            try {
+            Program.sys_view.ShowAll();
+            } catch {}
+        }*/
         public void Set() {
             if (parent.ActiveText != this.name.Text && parent.Active != -1) {
                 var elements = new Structures.OrbitalElements() {
@@ -337,16 +358,19 @@ namespace StartupScreen {
             body.radius = RadiusScale.Value*1e3;
             body.reflectivity = new Vector3(RScale.Value, GScale.Value, BScale.Value);
         }
-        public void ReverseSet() {
-            try {
+        public void SetElements(OrbitalElements elements) {
+            SMAScale.Value = elements.semimajoraxis/AU;
+            EScale.Value   = elements.eccentricity;
+            IncScale.Value = elements.inclination/deg;
+            ANLScale.Value = elements.ascendingNodeLongitude/deg;
+            PAScale.Value  = elements.periapsisArgument/deg;
+            TAScale.Value  = elements.trueAnomaly/deg;
+        }
+        public void ReverseSet(bool elem = true) {
+            if (elem) try {
                 parent.Active  = Menu.new_bodies.FindIndex(b => b.name.Text == body.parent.name);
                 var elements   = new OrbitalElements(body.position-body.parent.position,body.velocity-body.parent.velocity,body.parent.stdGrav);
-                SMAScale.Value = elements.semimajoraxis/AU;
-                EScale.Value   = elements.eccentricity;
-                IncScale.Value = elements.inclination/deg;
-                ANLScale.Value = elements.ascendingNodeLongitude/deg;
-                PAScale.Value  = elements.periapsisArgument/deg;
-                TAScale.Value  = elements.trueAnomaly/deg;
+                this.SetElements(elements);
             } catch (NullReferenceException) {} // if body has no parent
             name.Text = body.name;
             MassScale.Value = Math.Log((body.stdGrav/Constants.G)/1e22);
@@ -369,6 +393,7 @@ namespace StartupScreen {
     [Serializable()]
     public class SaveData {
         public List<Body> bodies {get; set;}
+        public List<OrbitalElements> elements {get; set;}
         public List<bool> centers {get; set;}
         public double STEP {get; set;}
         public double radius_multiplier {get; set;}
