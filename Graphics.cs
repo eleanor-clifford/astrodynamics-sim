@@ -8,18 +8,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using static Constants;
 namespace Graphics {
-	static class Transforms {
-		public static Vector3 Perspective(Vector3 true_position, Camera c) {
-			return Matrix3.ExtrinsicZYXRotation(c.angle)*(true_position - c.position);
-		}
-	}
 	class Camera {
 		public Vector3 position {get; protected set;}
 		public Vector3 angle {get; protected set;}
 		public Camera(double distance, Vector3 angle) {
+			// the camera always "points" to the origin
 			this.angle = angle;
 			position = Matrix3.IntrinsicZYXRotation(angle)*new Vector3(0,0,distance);
 
+		}
+		public Vector3 Transform(Vector3 position) {
+			return Matrix3.ExtrinsicZYXRotation(this.angle)*(position - this.position);
 		}
 	}
 	class SystemView : DrawingArea {
@@ -31,7 +30,7 @@ namespace Graphics {
 		public double line_multiplier {get; set;} = 0.8;
 		public double perspective_scale = 0;
 		public int line_max {get; set;} = 100;
-		private List<Vector3>[] paths;
+		public List<Vector3>[] paths;
 		private int[] order;
 		protected double max = 0;
 		public SystemView(PlanetarySystem sys) {
@@ -43,7 +42,7 @@ namespace Graphics {
 			for (int i = 0; i < sys.bodies.Count; i++) order[i] = i;
 			max = 0;
 			foreach (Body b in sys.bodies) {
-				var p = Vector3.Magnitude(Transforms.Perspective(b.position,camera) - Transforms.Perspective(sys.origin,camera));
+				var p = Vector3.Magnitude(camera.Transform(b.position) - camera.Transform(sys.origin));
 				if (p > max) {
 					max = p;
 				}
@@ -76,6 +75,10 @@ namespace Graphics {
 					paths[order[i]] = new List<Vector3>();
 				}
 			}
+			Vector3 origin;
+			if (Program.activesys.center_index == -1) origin = Program.activesys.Barycenter();
+			else origin = Program.activesys.bodies[Program.activesys.centers[Program.activesys.center_index]].position;
+
 			order = order.OrderByDescending(x => Vector3.Magnitude(sys.bodies[x].position - camera.position)).ToArray();
 			for (int i = 0; i < sys.bodies.Count; i++) {
 				Body body = sys.bodies[order[i]];
@@ -88,25 +91,32 @@ namespace Graphics {
 				for (int j = -1; j < paths[order[i]].Count; j++) {
 					
 					Vector3 true_position;
-					if (j == -1) true_position = body.position;
-					else true_position = paths[order[i]][j];
+					if (j == -1) true_position = body.position;//origin;
+					else true_position = paths[order[i]][j] + origin;
 					Vector3 pos;
-					pos = Transforms.Perspective(true_position,camera) - Transforms.Perspective(sys.origin,camera);
+					pos = camera.Transform(true_position) - camera.Transform(origin);
 					var cl = body.reflectivity;
 					ctx.SetSourceRGB (cl.x,cl.y,cl.z);
+					//Console.WriteLine(Vector3.LogByComponent(lastPath));
 					if (j == -1) {
 						ctx.Arc(pos.x,pos.y,r,0,2*Math.PI);
 						ctx.Fill();
 					}
 					else if (j > 0) {
+						//lastPath -= camera.Transform(origin);
 						ctx.MoveTo(lastPath.x,lastPath.y);
 						ctx.LineTo(pos.x,pos.y);
 						ctx.Stroke();
-					} lastPath = pos;
+					} lastPath = pos;// + camera.Transform(origin);
 
 				}
-				paths[order[i]].Add(body.position);
-				if (paths[order[i]].Count > line_max) {
+				paths[order[i]].Add(body.position - origin);
+				if (paths[order[i]].Count > line_max + 1) {
+					paths[order[i]].RemoveAt(0);
+					paths[order[i]].RemoveAt(0);
+					// remove faster than they can be created if line_max has been reduced
+				}
+				else if (paths[order[i]].Count > line_max) {
 					paths[order[i]].RemoveAt(0);
 				}
 			}

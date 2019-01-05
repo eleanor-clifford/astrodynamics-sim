@@ -43,3 +43,12 @@ PlanetarySystem:
     - handles the operation of the system as a whole
     - constructed from list of Body objects
     - Provides synchronous and async methods of running the simulation
+Camera:
+    - contains a positon and angle of a camera, and a method to transform true position into a 2D projection
+SystemView:
+    - handles the displaying of the running simulation
+    - the position of each body is put through a camera transform,
+      which creates the illusion of 3D perspective
+    - then it is drawn to the screen
+    
+

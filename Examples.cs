@@ -5,6 +5,7 @@ using Structures;
 using static Constants;
 namespace Structures {
 	static class Examples {
+		// Example bodies, elements, and systems
 		public static Body sun {get; private set;}
 		public static PlanetarySystem solar_system {get; private set;}
 		public static List<OrbitalElements> solar_system_elements {get; private set;}
