@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using static Constants;
+using static Program.Constants;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
@@ -12,10 +12,6 @@ namespace Structures
 		public List<int> centers {get; set;} = new List<int>();
 		// -1 indicates space is not locked
 		public int center_index = -1;
-		public Task center_task {get; protected set;}
-		protected CancellationTokenSource center_task_source;
-		protected CancellationToken center_task_token;
-		public Vector3 origin {get; protected set;} = Vector3.zero;
 		public PlanetarySystem(List<Body> bodies = null) {
 			if (bodies == null) this.bodies = new List<Body>();
 			else this.bodies = bodies;
@@ -46,8 +42,7 @@ namespace Structures
 					// The magnitude of the force, multiplied by G, = %mu_1 * %mu_2 / r^2
 					double mag_force_g = body1.stdGrav * body2.stdGrav / Math.Pow(Vector3.Magnitude(body1.position - body2.position),2);
 					// We lost direction in the previous calculation (since we had to square the vector), but we need it.
-					Vector3 direction = (body1.position - body2.position);
-					direction /= Vector3.Magnitude(direction);
+					Vector3 direction = Vector3.Unit(body1.position - body2.position);
 					// since acceleration is F/m, and we have G*F and G*m, we can find an acceleration vector easily
 					Vector3 acceleration1 =  mag_force_g * -direction / body1.stdGrav;
 					Vector3 acceleration2 = mag_force_g * direction / body2.stdGrav;

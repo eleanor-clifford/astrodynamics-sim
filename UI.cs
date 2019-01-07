@@ -4,31 +4,31 @@ using System.Linq;
 using System.Collections.Generic;
 using Gtk;
 using Cairo;
-using static Program;
-using static Constants;
+using static Program.Program;
+using static Program.Constants;
 using Structures;
-namespace StartupScreen {
+namespace UI {
     public class Menu : Window {
-        public VBox containerbox {get; private set;}
-        public VBox radiobox {get; private set;}
-        public ScrolledWindow systemscrollbox {get; private set;}
-        public VBox systembox {get; private set;}
-        public VBox donebox {get; private set;}
-        public Scale TimestepScale {get; private set;}
-        public Scale RScale {get; private set;}
-        public Scale LineScale {get; private set;}
-        public RadioButton radio0;
-        public RadioButton radio1;
-        public RadioButton radio2;
-        public RadioButton radio3;
-        public RadioButton radio4;
-        private ComboBoxText bCombo;
-        public Button loadButton;
-        public Entry filename;
-        public static List<Structures.Body> std_bodies = Examples.solar_system_bodies;
-        internal static List<BodyBox> new_bodies = new List<BodyBox>();
-        public SaveData temp_savedata = null;
-        public static List<bool> centers = new List<bool>();
+        protected VBox containerbox;
+        protected VBox radiobox;
+        protected ScrolledWindow systemscrollbox;
+        protected VBox systembox;
+        protected VBox donebox;
+        protected Scale TimestepScale;
+        protected Scale RScale;
+        protected Scale LineScale;
+        protected RadioButton radio0;
+        protected RadioButton radio1;
+        protected RadioButton radio2;
+        protected RadioButton radio3;
+        protected RadioButton radio4;
+        protected ComboBoxText bCombo;
+        public Button loadButton {get; set;}
+        protected Entry filename;
+        protected static List<Structures.Body> std_bodies = Examples.solar_system_bodies;
+        internal static List<BodyBox> new_bodies {get; set;} = new List<BodyBox>();
+        public SaveData temp_savedata {get; set;} = null;
+        protected static List<bool> centers = new List<bool>();
         
         public Menu(Gtk.WindowType s = Gtk.WindowType.Toplevel) : base(s) { // weird inheritancy stuff, don't change
             this.SetDefaultSize(300,400);
@@ -134,25 +134,25 @@ namespace StartupScreen {
             this.Add(containerbox);
             this.ShowAll();
         }
-        private void OnDoneClick(object obj, EventArgs args) {
-            Program.RadioOptions = new List<Boolean>(){radio0.Active,radio1.Active,radio2.Active,radio3.Active,radio4.Active};
-            Program.CustomBodies.Clear();
-            Program.CustomCenters.Clear();
+        protected void OnDoneClick(object obj, EventArgs args) {
+            Program.Program.RadioOptions = new List<Boolean>(){radio0.Active,radio1.Active,radio2.Active,radio3.Active,radio4.Active};
+            Program.Program.CustomBodies.Clear();
+            Program.Program.CustomCenters.Clear();
             centers.Clear();
             foreach (BodyBox b in new_bodies) {
                 b.Set();
-                Program.CustomBodies.Add(b.body);
+                Program.Program.CustomBodies.Add(b.body);
                 centers.Add(b.CenterButton.Active);
 
             }
-            Program.CustomCenters = centers;
-            Program.radius_multiplier = RScale.Value;
-            Program.line_max = (int)LineScale.Value;
-            Program.STEP = TimestepScale.Value;
-            Program.Start();
+            Program.Program.CustomCenters = centers;
+            Program.Program.radius_multiplier = RScale.Value;
+            Program.Program.line_max = (int)LineScale.Value;
+            Program.Program.timestep = TimestepScale.Value;
+            Program.Program.Start();
             this.Destroy();
         }
-        private void OnAddClick(object obj, EventArgs args) {
+        protected void OnAddClick(object obj, EventArgs args) {
 
             var bodyBox = new BodyBox();
             String bString = bCombo.ActiveText;
@@ -174,7 +174,7 @@ namespace StartupScreen {
             }
             this.ShowAll();
         }
-        private void OnSaveClick(object obj, EventArgs args) {
+        protected void OnSaveClick(object obj, EventArgs args) {
             System.Xml.Serialization.XmlSerializer writer =   
                 new System.Xml.Serialization.XmlSerializer(typeof(SaveData));
             if (File.Exists(Environment.CurrentDirectory + "//" + filename.Text + ".xml")) {
@@ -202,7 +202,7 @@ namespace StartupScreen {
             var data = new SaveData() {
                 bodies = bodies,
                 elements = elements,
-                STEP = TimestepScale.Value,
+                timestep = TimestepScale.Value,
                 centers = centers,
                 radius_multiplier = RScale.Value,
                 line_max = LineScale.Value,
@@ -210,7 +210,7 @@ namespace StartupScreen {
             writer.Serialize(file, data);
             file.Close();
         }
-        private void OnLoadClick(object obj, EventArgs args) {
+        protected void OnLoadClick(object obj, EventArgs args) {
             System.Xml.Serialization.XmlSerializer reader =   
                 new System.Xml.Serialization.XmlSerializer(typeof(SaveData));
             try {
@@ -223,7 +223,7 @@ namespace StartupScreen {
                 }
                 RScale.Value = data.radius_multiplier;
                 LineScale.Value = data.line_max;
-                TimestepScale.Value = data.STEP;
+                TimestepScale.Value = data.timestep;
                 new_bodies.Clear();
                 foreach (Widget w in systembox.Children) {
                     if (w is BodyBox) systembox.Remove (w);
@@ -255,22 +255,21 @@ namespace StartupScreen {
         }
     }
     class BodyBox : HBox {
-        public Structures.Body body {get; set;}
-        public Entry name;
-        public ComboBoxText parent = new ComboBoxText();
-        public Scale MassScale;
-        public Scale RadiusScale;
-        public Scale SMAScale;
-        public Scale EScale;
-        public Scale IncScale;
-        public Scale ANLScale;
-        public Scale PAScale;
-        public Scale TAScale;
-        public Scale RScale;
-        public Scale GScale;
-        public Scale BScale;
-        public CheckButton CenterButton;
-        public Button DeleteButton;
+        public Body body {get; set;}
+        public Entry name {get; set;}
+        public ComboBoxText parent {get; set;} = new ComboBoxText();
+        public Scale MassScale {get; set;}
+        public Scale RadiusScale {get; set;}
+        public Scale SMAScale {get; set;}
+        public Scale EScale {get; set;}
+        public Scale IncScale {get; set;}
+        public Scale ANLScale {get; set;}
+        public Scale PAScale {get; set;}
+        public Scale TAScale {get; set;}
+        public Scale RScale {get; set;}
+        public Scale GScale {get; set;}
+        public Scale BScale {get; set;}
+        public CheckButton CenterButton {get; set;}
         public BodyBox() {
             body = new Structures.Body();
             name = new Entry();
@@ -280,7 +279,7 @@ namespace StartupScreen {
             RadiusScale = new Scale(Orientation.Vertical, 0.1,1000000,0.1);
             SMAScale = new Scale(Orientation.Vertical, 0.1,50,0.01);
             EScale = new Scale(Orientation.Vertical, 0,3,0.001);
-            IncScale = new Scale(Orientation.Vertical, 0,90,0.01);
+            IncScale = new Scale(Orientation.Vertical, 0,180,0.01);
             ANLScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
             PAScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
             TAScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
@@ -324,7 +323,7 @@ namespace StartupScreen {
             this.PackStart(optionsbox, true, true, 3);
 
         }
-        private void OnParentChange(object obj, EventArgs args) {
+        protected void OnParentChange(object obj, EventArgs args) {
             try {
                 var parentBody = Menu.new_bodies.FirstOrDefault(b => b.body.name == parent.ActiveText).body;
                 double hillrad = parentBody.HillRadius()/AU;
@@ -333,7 +332,7 @@ namespace StartupScreen {
                 this.SMAScale.SetRange(Math.Pow(10,-this.SMAScale.Digits),hillrad);
             } catch (NullReferenceException) {} // no parent, don't set values
         }
-        /*private void OnDeleteClick(object obj, EventArgs args) {
+        /*protected void OnDeleteClick(object obj, EventArgs args) {
             var index = Menu.new_bodies.IndexOf(this);
             Menu.new_bodies.RemoveAt(index);
             Console.WriteLine(Program.sys_view == null);
@@ -354,9 +353,9 @@ namespace StartupScreen {
                 body = new Structures.Body(Menu.new_bodies.FirstOrDefault(b => b.body.name == parent.ActiveText).body,elements);
             }
             body.name = this.name.Text;
-            body.stdGrav = Math.Pow(Math.E,MassScale.Value)*Constants.G*1e22;
+            body.stdGrav = Math.Pow(Math.E,MassScale.Value)*G*1e22;
             body.radius = RadiusScale.Value*1e3;
-            body.reflectivity = new Vector3(RScale.Value, GScale.Value, BScale.Value);
+            body.color = new Vector3(RScale.Value, GScale.Value, BScale.Value);
         }
         public void SetElements(OrbitalElements elements) {
             SMAScale.Value = elements.semimajoraxis/AU;
@@ -373,11 +372,11 @@ namespace StartupScreen {
                 this.SetElements(elements);
             } catch (NullReferenceException) {} // if body has no parent
             name.Text = body.name;
-            MassScale.Value = Math.Log((body.stdGrav/Constants.G)/1e22);
+            MassScale.Value = Math.Log((body.stdGrav/G)/1e22);
             RadiusScale.Value = body.radius/1e3;
-            RScale.Value = body.reflectivity.x;
-            GScale.Value = body.reflectivity.y;
-            BScale.Value = body.reflectivity.z;
+            RScale.Value = body.color.x;
+            GScale.Value = body.color.y;
+            BScale.Value = body.color.z;
         }
         public void ResetParents() {
             parent.RemoveAll();
@@ -395,7 +394,7 @@ namespace StartupScreen {
         public List<Body> bodies {get; set;}
         public List<OrbitalElements> elements {get; set;}
         public List<bool> centers {get; set;}
-        public double STEP {get; set;}
+        public double timestep {get; set;}
         public double radius_multiplier {get; set;}
         public double line_max {get; set;}
     }

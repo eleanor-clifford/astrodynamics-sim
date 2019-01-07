@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<SaveData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <bodies />
+  <elements />
+  <centers />
+  <timestep>50</timestep>
+  <radius_multiplier>100</radius_multiplier>
+  <line_max>100</line_max>
+</SaveData>

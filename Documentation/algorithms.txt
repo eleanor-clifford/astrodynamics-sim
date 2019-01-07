@@ -26,7 +26,7 @@ class Body:
 		position vector (m)
 		velocity vector (m)
 		luminosity spectrum (rgb)
-		reflectivity (rgb)
+		color (rgb)
 	methods:
 		(constructor) (float ...) # generates a new body in orbit around this body
 		                      # from a keplerian equation (eccentricity, semimajor axis etc.) 

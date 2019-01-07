@@ -8,7 +8,7 @@
 ## Interface
 
 - The system can be initially set up by adding bodies to a list (GUI) and using sliders to
-set position, mass, radius, luminosity vector, reflectivity vector, and either a Keplerian 
+set position, mass, radius, luminosity vector, color vector, and either a Keplerian 
 orbit description around another body, or an initial velocity vector. All these variables 
 can be modified at runtime, including adding another body spontaneously.
 

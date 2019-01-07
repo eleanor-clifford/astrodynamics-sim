@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using static Constants;
+using static Program.Constants;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
@@ -9,6 +9,7 @@ namespace Structures
 	[Serializable()]
 	public class Vector3 {
 		// Simple 3-vector class, used for positions, velocities, color, etc.
+		// setters are required for deserialization but should not be used outside class
 		public double x {get; set;}
 		public double y {get; set;}
 		public double z {get; set;}
@@ -17,6 +18,14 @@ namespace Structures
 			this.x = x;
 			this.y = y;
 			this.z = z;
+		}
+		// Immutable standard vectors
+		public static Vector3 zero {get;} = new Vector3(0,0,0);
+		public static Vector3 i {get;} = new Vector3(1,0,0);
+		public static Vector3 j {get;} = new Vector3(0,1,0);
+		public static Vector3 k {get;} = new Vector3(0,0,1);
+		public override String ToString() {
+			return $"Vector3({x},{y},{z})";
 		}
 		public static bool operator== (Vector3 a, Vector3 b) {
 			try {
@@ -70,9 +79,6 @@ namespace Structures
 				a.x*b.y - a.y*b.x
 			);
 		}
-		public override String ToString() {
-			return $"Vector3({x},{y},{z})";
-		}
 		public static double Magnitude(Vector3 v) {
 			// Pythagorean Theorem
 			return Math.Sqrt(Math.Pow(v.x,2)+Math.Pow(v.y,2)+Math.Pow(v.z,2));
@@ -116,11 +122,7 @@ namespace Structures
 			// ISO Convention
 			return Matrix3.ZRotation(v.z) * Matrix3.YRotation(v.y) * (v.x*Vector3.k);
 		}
-		// Immutable standard vectors
-		public static Vector3 zero {get;} = new Vector3(0,0,0);
-		public static Vector3 i {get;} = new Vector3(1,0,0);
-		public static Vector3 j {get;} = new Vector3(0,1,0);
-		public static Vector3 k {get;} = new Vector3(0,0,1);
+		
 	}
 	public class Matrix3 {
 		// the fields describe the rows. Using Vector3s makes Matrix-Vector Multiplication
@@ -132,6 +134,9 @@ namespace Structures
 			this.x = x;
 			this.y = y;
 			this.z = z;
+		}
+		public override String ToString() {
+			return $"Matrix3( {x.x} {x.y} {x.z}\n         {y.x} {y.y} {y.z}\n         {z.x} {z.y} {z.z} )";
 		}
 		public static Matrix3 XRotation(double x) {
 			return new Matrix3 (
@@ -165,9 +170,6 @@ namespace Structures
 		}
 		public static Matrix3 IntrinsicZYXRotation(Vector3 v) {
 			return ZRotation(v.z)*YRotation(v.y)*XRotation(v.x);
-		}
-		public override String ToString() {
-			return $"Matrix3( {x.x} {x.y} {x.z}\n         {y.x} {y.y} {y.z}\n         {z.x} {z.y} {z.z} )";
 		}
 		public static bool operator== (Matrix3 a, Matrix3 b) {
 			return a.x == b.x && a.y == b.y && a.z == b.z;
@@ -235,7 +237,7 @@ namespace Structures
 				new Vector3(m.x.z,m.y.z,m.z.z)
 			);
 		}
-		public static Matrix3 Transpose_Cofactor(Matrix3 m) {
+		public static Matrix3 TransposeCofactor(Matrix3 m) {
 			// We never need to do the cofactor without the transpose, so this is an optimisation
 			return new Matrix3(
 				new Vector3(m.x.x,-m.y.x,m.z.x),
@@ -264,7 +266,7 @@ namespace Structures
 		}
 		public static Matrix3 Inverse(Matrix3 m) {
 			if (Matrix3.Determinant(m) == 0) throw new DivideByZeroException("Singular Matrix");
-			Matrix3 C_T = Matrix3.Transpose_Cofactor(Matrix3.Minor(m));
+			Matrix3 C_T = Matrix3.TransposeCofactor(Matrix3.Minor(m));
 			return (1/Matrix3.Determinant(m)) * C_T;
 		}
 	}
@@ -277,16 +279,17 @@ namespace Structures
 		public double radius {get; set;}
 		public Vector3 position {get; set;} = Vector3.zero;
 		public Vector3 velocity {get; set;} = Vector3.zero;
-		public Vector3 reflectivity {get; set;} = new Vector3(1,1,1);
+		public Vector3 color {get; set;} = new Vector3(1,1,1);
 		public Body() {} // paramaterless constructor for serialisation
 		public Body (Body parent, OrbitalElements elements) {
 			// First check the values are reasonable. If parent == null it is assumed that
 			// position and velocity are set explicitly, and this constructor is not used
 			if (parent == null) return;
 			this.parent = parent;
-			if (elements.inclination < 0 
-			 || elements.eccentricity < 0 
-			 || elements.semimajoraxis < 0 
+			if (elements.eccentricity < 0 
+			 || elements.semimajoraxis < 0
+			 || elements.inclination < 0 
+			 || elements.inclination > Math.PI
 			 || elements.ascendingNodeLongitude < 0
 			 || elements.ascendingNodeLongitude >= 2*Math.PI
 			 || elements.periapsisArgument < 0
@@ -351,7 +354,7 @@ namespace Structures
 				radius = this.radius,
 				position = this.position,
 				velocity = this.velocity,
-				reflectivity = this.reflectivity
+				color = this.color
 			};
 		}
 	}
@@ -380,7 +383,7 @@ namespace Structures
 		public double ascendingNodeLongitude {get; set;}
 		public double periapsisArgument {get; set;}
 		public double trueAnomaly {get; set;}
-		public OrbitalElements() {}
+		public OrbitalElements() {} // For serialisation
 		public OrbitalElements(Vector3 position, Vector3 velocity, double stdGrav) {
 			// stdGrav is the gravitational parameter of the parent body
 			var fVectors = new FundamentalVectors(position,velocity,stdGrav);
@@ -396,7 +399,6 @@ namespace Structures
 			double cosPeriArg = Vector3.UnitDot(fVectors.node,fVectors.eccentricity);
 			if (fVectors.eccentricity.z >= 0) this.periapsisArgument = Math.Acos(cosPeriArg);
 			else this.periapsisArgument = 2*Math.PI - Math.Acos(cosPeriArg);
-			Console.WriteLine($"{fVectors.eccentricity}, {fVectors.node}");
 			
 			var cosAnomaly = Vector3.UnitDot(fVectors.eccentricity,position);
 			if (this.eccentricity < 1e-10 ) {

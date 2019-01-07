@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using static Constants;
+using static Program.Constants;
 namespace Structures {
-    public class Tests {
+    public static class Tests {
         public static bool MatrixTest() {
             // Scalar Arithmetic
             var i = new Matrix3(new Vector3(1,0,0),new Vector3(0,1,0),new Vector3(0,0,1));
@@ -104,7 +104,7 @@ namespace Structures {
     			radius = 6.95e10, // 100x
     			position = Vector3.zero,
     			velocity = Vector3.zero,
-    			reflectivity = Vector3.zero
+    			color = Vector3.zero
     		};
             var earthElements = new OrbitalElements {
                 semimajoraxis = 3.5*AU,
@@ -152,7 +152,7 @@ namespace Structures {
                             var earth = new Body(sun,elements){
             	        		stdGrav = 3.986004419e14,
             			        radius = 6.371e8, // 100x
-    		        	        reflectivity = new Vector3(0,0.2,0.8),
+    		        	        color = new Vector3(0,0.2,0.8),
     		                };
                             if (!(Math.Abs(Vector3.Magnitude(earth.velocity) - 3e4) < 1e3 )) {
                                 Console.WriteLine($"{i},{j},{k},{l},{earth.velocity}");
