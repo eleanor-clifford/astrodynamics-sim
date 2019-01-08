@@ -184,7 +184,7 @@
   </bodies>
   <elements>
     <OrbitalElements>
-      <semimajoraxis>14959787070</semimajoraxis>
+      <semilatusrectum>14959787070</semilatusrectum>
       <eccentricity>0</eccentricity>
       <inclination>0</inclination>
       <ascendingNodeLongitude>0</ascendingNodeLongitude>
@@ -192,7 +192,7 @@
       <trueAnomaly>0</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>149597887155.76547</semimajoraxis>
+      <semilatusrectum>149597887155.76547</semilatusrectum>
       <eccentricity>0</eccentricity>
       <inclination>8.71176480188604E-07</inclination>
       <ascendingNodeLongitude>0</ascendingNodeLongitude>
@@ -200,7 +200,7 @@
       <trueAnomaly>4.3633231299858233</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>149597887155.76547</semimajoraxis>
+      <semilatusrectum>149597887155.76547</semilatusrectum>
       <eccentricity>0.50000000000000044</eccentricity>
       <inclination>8.71176480188604E-07</inclination>
       <ascendingNodeLongitude>0</ascendingNodeLongitude>
@@ -208,7 +208,7 @@
       <trueAnomaly>4.3633231299858233</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>149597887155.76547</semimajoraxis>
+      <semilatusrectum>149597887155.76547</semilatusrectum>
       <eccentricity>1.0099999999999998</eccentricity>
       <inclination>0.0017453292519978123</inclination>
       <ascendingNodeLongitude>0</ascendingNodeLongitude>
@@ -216,7 +216,7 @@
       <trueAnomaly>3.9269908169872414</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>149597887155.76547</semimajoraxis>
+      <semilatusrectum>149597887155.76547</semilatusrectum>
       <eccentricity>1.9459699256294782</eccentricity>
       <inclination>8.34465026855493E-07</inclination>
       <ascendingNodeLongitude>0</ascendingNodeLongitude>
@@ -231,7 +231,7 @@
     <boolean>false</boolean>
     <boolean>false</boolean>
   </centers>
-  <STEP>30</STEP>
+  <timestep>56.8</timestep>
   <radius_multiplier>100</radius_multiplier>
   <line_max>1000</line_max>
 </SaveData>

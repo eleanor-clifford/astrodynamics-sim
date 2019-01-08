@@ -25,7 +25,7 @@ namespace Structures {
 				// http://www.met.rdg.ac.uk/~ross/Astronomy/Planets.html
 				new OrbitalElements() {
 					// Mercury
-					semimajoraxis = 0.38709893*AU,
+					semilatusrectum = 0.37073084632655*AU,
 					eccentricity = 0.20563069,
 					inclination = 7.00487*deg,
 					ascendingNodeLongitude = 48.33167*deg,
@@ -34,7 +34,7 @@ namespace Structures {
 				},
 				new OrbitalElements() {
 					// Venus 
-					semimajoraxis = 0.72333199*AU,
+					semilatusrectum = 0.723298805955343*AU,
 					eccentricity = 0.00677323,
 					inclination = 3.39471*deg,
 					ascendingNodeLongitude = 76.68069*deg,
@@ -43,7 +43,7 @@ namespace Structures {
 				},
 				new OrbitalElements() {
 					// Earth 
-					semimajoraxis = 1.00000011*AU,
+					semilatusrectum = 0.999720878516836*AU,
 					eccentricity = 0.01671022,
 					inclination = 0.00005*deg,
 					ascendingNodeLongitude = 348.73936*deg,
@@ -52,7 +52,7 @@ namespace Structures {
 				},
 				new OrbitalElements() {
 					// Mars 
-					semimajoraxis = 1.52366231*AU,
+					semilatusrectum = 1.51036704082126*AU,
 					eccentricity = 0.09341233,
 					inclination = 1.85061*deg,
 					ascendingNodeLongitude = 49.57854*deg,
@@ -61,7 +61,7 @@ namespace Structures {
 				},
 				new OrbitalElements() {
 					// Jupiter 
-					semimajoraxis = 5.20336301*AU,
+					semilatusrectum = 5.191177516718821*AU,
 					eccentricity = 0.04839266,
 					inclination = 1.30530*deg,
 					ascendingNodeLongitude = 100.55615*deg,
@@ -70,7 +70,7 @@ namespace Structures {
 				},
 				new OrbitalElements() {
 					// Saturn 
-					semimajoraxis = 9.53707032*AU,
+					semilatusrectum = 9.50910488810135*AU,
 					eccentricity = 0.05415060,
 					inclination = 2.48446*deg,
 					ascendingNodeLongitude = 113.71504*deg,
@@ -79,7 +79,7 @@ namespace Structures {
 				},
 				new OrbitalElements() {
 					// Uranus 
-					semimajoraxis = 19.19126393*AU,
+					semilatusrectum = 19.1485673429066*AU,
 					eccentricity = 0.04716771,
 					inclination = 0.76986*deg,
 					ascendingNodeLongitude = 74.22988*deg,
@@ -88,22 +88,22 @@ namespace Structures {
 				},
 				new OrbitalElements() {
 					// Neptune 
-					semimajoraxis = 30.06896348*AU,
+					semilatusrectum = 30.0667468812982*AU,
 					eccentricity = 0.00858587,
 					inclination = 1.76917*deg,
 					ascendingNodeLongitude = 131.72169*deg,
 					periapsisArgument = 44.97135*deg,
 					trueAnomaly = 304.88003*deg
-				},/*
+				},
 				new OrbitalElements() {
 					// Pluto 
-					semimajoraxis = 39.48168677*AU,
+					semilatusrectum = 39.48168677*AU,
 					eccentricity = 0.24880766,
 					inclination = 17.14175*deg,
 					ascendingNodeLongitude = 110.30347*deg,
 					periapsisArgument = 224.06676*deg,
 					trueAnomaly = 238.92881*deg
-				}*/
+				}
 			};
 			solar_system_bodies = new List<Body>() {
 				(Body)sun.Clone(),
@@ -154,13 +154,13 @@ namespace Structures {
 					stdGrav = 6.836530e15,
 					radius = 24622e3,
 					color = new Vector3(0.5525244704623422,0.7383866805149026,0.868736820570925)
-				},/*
+				},
 				new Body() {
 					name = "Pluto",
 					stdGrav = 8.72e11,
 					radius = 1186e3,
 					color = new Vector3(0.732870760490961,0.6071190239708979,0.4988704626052213)
-				}*/
+				}
 			};
 			solar_system = new PlanetarySystem(new List<Body>() {
 				// All radii are multiplied by 100
@@ -214,13 +214,13 @@ namespace Structures {
 					stdGrav = 6.836530e15,
 					radius = 24622e3,
 					color = new Vector3(0.5525244704623422,0.7383866805149026,0.868736820570925)
-				},/*
+				},
 				new Body(sun, solar_system_elements[8]) {
 					name = "Pluto",
 					stdGrav = 8.72e11,
 					radius = 1186e3,
 					color = new Vector3(0.732870760490961,0.6071190239708979,0.4988704626052213)
-				}*/
+				}
 			});
 			inner_solar_system = new PlanetarySystem(solar_system.bodies.Take(5).ToList());
 		}

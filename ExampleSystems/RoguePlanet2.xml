@@ -384,7 +384,7 @@
   </bodies>
   <elements>
     <OrbitalElements>
-      <semimajoraxis>14959787070</semimajoraxis>
+      <semilatusrectum>14959787070</semilatusrectum>
       <eccentricity>0</eccentricity>
       <inclination>0</inclination>
       <ascendingNodeLongitude>0</ascendingNodeLongitude>
@@ -392,7 +392,7 @@
       <trueAnomaly>0</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>57909175678.248337</semimajoraxis>
+      <semilatusrectum>57909175678.248337</semilatusrectum>
       <eccentricity>0.20563069</eccentricity>
       <inclination>0.12225804517417503</inclination>
       <ascendingNodeLongitude>0.8435467744873677</ascendingNodeLongitude>
@@ -400,7 +400,7 @@
       <trueAnomaly>4.402607698921412</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>108208925513.19377</semimajoraxis>
+      <semilatusrectum>108208925513.19377</semilatusrectum>
       <eccentricity>0.0067732299999992956</eccentricity>
       <inclination>0.059248866650378151</inclination>
       <ascendingNodeLongitude>1.3383305132010905</ascendingNodeLongitude>
@@ -408,7 +408,7 @@
       <trueAnomaly>3.1761454603903014</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>149597887155.76581</semimajoraxis>
+      <semilatusrectum>149597887155.76581</semilatusrectum>
       <eccentricity>0.016710219999999998</eccentricity>
       <inclination>8.7257718872772546E-07</inclination>
       <ascendingNodeLongitude>0</ascendingNodeLongitude>
@@ -416,7 +416,7 @@
       <trueAnomaly>1.7534336883759396</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>227936637241.84332</semimajoraxis>
+      <semilatusrectum>227936637241.84332</semilatusrectum>
       <eccentricity>0.093412330000000043</eccentricity>
       <inclination>0.032299237670329828</inclination>
       <ascendingNodeLongitude>0.86530876133170953</ascendingNodeLongitude>
@@ -424,7 +424,7 @@
       <trueAnomaly>6.2038307711450118</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>778412026775.14246</semimajoraxis>
+      <semilatusrectum>778412026775.14246</semilatusrectum>
       <eccentricity>0.048392659999999747</eccentricity>
       <inclination>0.022781782726280068</inclination>
       <ascendingNodeLongitude>1.7550359006292962</ascendingNodeLongitude>
@@ -432,7 +432,7 @@
       <trueAnomaly>0.60046970810728872</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>1426725412588.1675</semimajoraxis>
+      <semilatusrectum>1426725412588.1675</semilatusrectum>
       <eccentricity>0.05415060000000009</eccentricity>
       <inclination>0.043362007134100704</inclination>
       <ascendingNodeLongitude>1.9847018570370527</ascendingNodeLongitude>
@@ -440,7 +440,7 @@
       <trueAnomaly>0.87169282666965253</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>2870972219969.7153</semimajoraxis>
+      <semilatusrectum>2870972219969.7153</semilatusrectum>
       <eccentricity>0.047167710000000286</eccentricity>
       <inclination>0.013436591779400342</inclination>
       <ascendingNodeLongitude>1.2955558093602884</ascendingNodeLongitude>
@@ -448,7 +448,7 @@
       <trueAnomaly>5.4669328641995349</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>4498252910764.0625</semimajoraxis>
+      <semilatusrectum>4498252910764.0625</semilatusrectum>
       <eccentricity>0.008585870000000247</eccentricity>
       <inclination>0.0308778415275031</inclination>
       <ascendingNodeLongitude>2.2989771867912894</ascendingNodeLongitude>
@@ -456,7 +456,7 @@
       <trueAnomaly>5.3211603470791111</trueAnomaly>
     </OrbitalElements>
     <OrbitalElements>
-      <semimajoraxis>149597887155.76581</semimajoraxis>
+      <semilatusrectum>149597887155.76581</semilatusrectum>
       <eccentricity>1.104</eccentricity>
       <inclination>0.022165681500327987</inclination>
       <ascendingNodeLongitude>0</ascendingNodeLongitude>

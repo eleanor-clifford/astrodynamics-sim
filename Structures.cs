@@ -287,7 +287,7 @@ namespace Structures
 			if (parent == null) return;
 			this.parent = parent;
 			if (elements.eccentricity < 0 
-			 || elements.semimajoraxis < 0
+			 || elements.semilatusrectum < 0
 			 || elements.inclination < 0 
 			 || elements.inclination > Math.PI
 			 || elements.ascendingNodeLongitude < 0
@@ -300,7 +300,7 @@ namespace Structures
 				// Throw an exception if the arguments are out of bounds
 				throw new ArgumentException();
 			}
-			double semilatusrectum = elements.semimajoraxis;//*(1-Math.Pow(elements.eccentricity,2));
+			double semilatusrectum = elements.semilatusrectum;//*(1-Math.Pow(elements.eccentricity,2));
 			// working in perifocal coordinates (periapsis along the x axis, orbit in the x,y plane):
 			double mag_peri_radius = semilatusrectum/(1+elements.eccentricity*Math.Cos(elements.trueAnomaly));
 			Vector3 peri_radius = mag_peri_radius*new Vector3(Math.Cos(elements.trueAnomaly),Math.Sin(elements.trueAnomaly),0);
@@ -377,7 +377,7 @@ namespace Structures
 	}
 	public class OrbitalElements {
 		// The six classical orbital elements
-		public double semimajoraxis {get; set;}
+		public double semilatusrectum {get; set;}
 		public double eccentricity {get; set;}
 		public double inclination {get; set;}
 		public double ascendingNodeLongitude {get; set;}
@@ -389,7 +389,7 @@ namespace Structures
 			var fVectors = new FundamentalVectors(position,velocity,stdGrav);
 			this.eccentricity = Vector3.Magnitude(fVectors.eccentricity);
 			var semilatusrectum = Math.Pow(Vector3.Magnitude(fVectors.angularMomentum),2)/stdGrav;
-			this.semimajoraxis = semilatusrectum;///(1-Math.Pow(eccentricity,2));
+			this.semilatusrectum = semilatusrectum;///(1-Math.Pow(eccentricity,2));
 			this.inclination = Math.Acos(fVectors.angularMomentum.z/Vector3.Magnitude(fVectors.angularMomentum)); // 0 <= i <= 180deg			
 			//TODO: fix parabola
 

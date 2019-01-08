@@ -77,10 +77,7 @@ namespace Graphics {
 			if (paths == null) {
 				this.ClearPaths();
 			}
-			Vector3 origin;
-			if (Program.Program.activesys.center_index == -1) origin = Program.Program.activesys.Barycenter();
-			else origin = Program.Program.activesys.bodies[Program.Program.activesys.centers[Program.Program.activesys.center_index]].position;
-
+			var origin = Program.Program.activesys.origin;
 			order = order.OrderByDescending(x => Vector3.Magnitude(sys.bodies[x].position - camera.position)).ToArray();
 			for (int i = 0; i < sys.bodies.Count; i++) {
 				Body body = sys.bodies[order[i]];

@@ -28,6 +28,18 @@ namespace Structures
 			}
 			return weighted_center/mu_total;
 		}
+		public void IterateCenter() {
+			this.center_index += 1;
+            if (this.center_index >= this.centers.Count) {
+                this.center_index = -1;
+            }
+		}
+		public Vector3 origin {
+			get {
+				if (this.center_index == -1) return this.Barycenter();
+				else return this.bodies[this.centers[this.center_index]].position;
+			}
+		}
 		protected Vector3[] GetAcceleration() {
 			Vector3[] acceleration = new Vector3[this.bodies.Count];
 			// Initialise our array to Vector3.zero, since the default is a null pointer.
