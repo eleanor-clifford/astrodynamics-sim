@@ -478,5 +478,5 @@
   </centers>
   <timestep>89.9</timestep>
   <radius_multiplier>100</radius_multiplier>
-  <line_max>281</line_max>
+  <line_max>215</line_max>
 </SaveData>
