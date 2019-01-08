@@ -25,6 +25,7 @@ namespace UI {
         protected ComboBoxText bCombo;
         public Button loadButton {get; set;}
         protected Entry filename;
+        protected readonly String SYSTEM_DIRECTORY = "ExampleSystems";
         protected static List<Structures.Body> std_bodies = Examples.solar_system_bodies;
         internal static List<BodyBox> new_bodies {get; set;} = new List<BodyBox>();
         public SaveData temp_savedata {get; set;} = null;
@@ -36,6 +37,7 @@ namespace UI {
             containerbox = new VBox(homogeneous: false, spacing: 3);
             radiobox = new VBox(homogeneous: false, spacing: 3);
             systemscrollbox = new ScrolledWindow();
+            //systemscrollbox.HscrollbarPolicy = PolicyType.Never;
             systembox = new VBox(homogeneous: false, spacing: 3);
             donebox = new VBox(homogeneous: false, spacing: 3);
 
@@ -51,22 +53,24 @@ namespace UI {
             LineScale.Value = 100;
 
 
+            /*
             radio0 = new RadioButton("Standard Solar System");
             radio1 = new RadioButton(radio0,"Standard Solar System with Black Hole");
             radio2 = new RadioButton(radio1,"Inner Solar System");
             radio3 = new RadioButton(radio2,"Binary Star System");
             radio4 = new RadioButton(radio3,"Custom Solar System");
+            *//*
             var sysL1 = new Label("Name");
             var sysL2 = new Label("Parent");
             var sysL3 = new Label("Log Mass (10^22kg)");
             var sysL4 = new Label("Radius (km)");
-            var sysL5 = new Label("Semi-major axis (AU)");
+            var sysL5 = new Label("Semi-latus rectum (AU)");
             var sysL6 = new Label("Eccentricity");
             var sysL7 = new Label("Inclination (deg)");
-            var sysL8 = new Label("Longitude of Ascending Node (deg)");
-            var sysL9 = new Label("Argument of Periapsis (deg)");
+            var sysL8 = new Label("Longitude of Ascending \n         Node (deg)");
+            var sysL9 = new Label("Argument of \nPeriapsis (deg)");
             var sysL10= new Label("True Anomaly (deg)");
-            var lBox = new HBox();
+            var lBox = new HBox(homogeneous: true, spacing: 3);
             lBox.PackStart(sysL1,true,true,3);
             lBox.PackStart(sysL2,true,true,3);
             lBox.PackStart(sysL3,true,true,3);
@@ -77,7 +81,7 @@ namespace UI {
             lBox.PackStart(sysL8,true,true,3);
             lBox.PackStart(sysL9,true,true,3);
             lBox.PackStart(sysL10,true,true,3);
-
+            */
             var addBox = new HBox();
 
             var addButton = new Button("Add");
@@ -116,15 +120,16 @@ namespace UI {
             optionsbox.PackStart(optionbox3, true, true, 3);
 
             radiobox.PackStart(optionsbox, false, false, 3);
-            radiobox.PackStart(TimestepScale, false, false, 3);
+            /*
             radiobox.PackStart(radio0, false, false, 3);
             radiobox.PackStart(radio1, false, false, 3);
             radiobox.PackStart(radio2, false, false, 3);
             radiobox.PackStart(radio3, false, false, 3);
             radiobox.PackStart(radio4, false, false, 3);
+            */
             radiobox.PackStart(addButton, false, false, 3);
             radiobox.PackStart(addBox, false, false, 3);
-            radiobox.PackStart(lBox, false, false, 3);
+            //radiobox.PackStart(lBox, false, false, 3);
             systemscrollbox.Add(systembox);
             donebox.PackStart(doneButton, false, false, 3);
 
@@ -135,7 +140,7 @@ namespace UI {
             this.ShowAll();
         }
         protected void OnDoneClick(object obj, EventArgs args) {
-            Program.Program.RadioOptions = new List<Boolean>(){radio0.Active,radio1.Active,radio2.Active,radio3.Active,radio4.Active};
+            //Program.Program.RadioOptions = new List<Boolean>(){radio0.Active,radio1.Active,radio2.Active,radio3.Active,radio4.Active};
             Program.Program.CustomBodies.Clear();
             Program.Program.CustomCenters.Clear();
             centers.Clear();
@@ -154,7 +159,7 @@ namespace UI {
         }
         protected void OnAddClick(object obj, EventArgs args) {
 
-            var bodyBox = new BodyBox();
+            var bodyBox = new BodyBox(homogeneous: false, spacing: 3);
             String bString = bCombo.ActiveText;
             if (bString != "Custom") {
                 var body = Examples.solar_system.bodies.First(b => b.name == bString);
@@ -167,7 +172,7 @@ namespace UI {
             
             bodyBox.name.Text = bCombo.ActiveText;
             systembox.PackStart(bodyBox, true, true, 3);
-            this.radio4.Active = true;
+            //this.radio4.Active = true;
             new_bodies.Add(bodyBox);
             foreach (BodyBox b in new_bodies) {
                 b.ResetParents();
@@ -191,7 +196,7 @@ namespace UI {
                 bodies.Add(b.body);
                 centers.Add(b.CenterButton.Active);
                 elements.Add(new OrbitalElements() {
-                    semimajoraxis = b.SMAScale.Value*AU,
+                    semilatusrectum = b.SLRScale.Value*AU,
                     eccentricity = b.EScale.Value,
                     inclination = b.IncScale.Value*deg,
                     ascendingNodeLongitude = b.ANLScale.Value*deg,
@@ -213,13 +218,29 @@ namespace UI {
         protected void OnLoadClick(object obj, EventArgs args) {
             System.Xml.Serialization.XmlSerializer reader =   
                 new System.Xml.Serialization.XmlSerializer(typeof(SaveData));
-            try {
-                SaveData data;
+                SaveData data = new SaveData(); // To prevent compiler error
                 if (temp_savedata != null) {
                     data = temp_savedata;
+                    temp_savedata = null;
                 } else {
-                    var file = new StreamReader(Environment.CurrentDirectory + "//" + filename.Text + ".xml");
-                    data = (SaveData)reader.Deserialize(file);
+                    try {
+                        var file = new StreamReader(Environment.CurrentDirectory + "//" + filename.Text + ".xml");
+                        data = (SaveData)reader.Deserialize(file);
+                    } catch (IOException) {
+                        // Try in the system directory
+                        try {
+                            var file = new StreamReader(Environment.CurrentDirectory + "//" + SYSTEM_DIRECTORY + "//" + filename.Text + ".xml");
+                            data = (SaveData)reader.Deserialize(file);
+                        } catch (IOException) { 
+                            filename.Text = "Not Found";
+                            // cannot deserialize, exit
+                            return;
+                        }
+                    } catch (InvalidOperationException) {
+                        filename.Text = "Invalid File";
+                        // cannot deserialize, exit
+                        return;
+                    }
                 }
                 RScale.Value = data.radius_multiplier;
                 LineScale.Value = data.line_max;
@@ -230,7 +251,7 @@ namespace UI {
                 }
 
                 for (int i = 0; i < data.bodies.Count; i++) {
-                    var bbox = new BodyBox() {
+                    var bbox = new BodyBox(homogeneous: false, spacing: 3) {
                         body = data.bodies[i],
                     };
                     bbox.CenterButton.Active = data.centers[i];
@@ -246,11 +267,9 @@ namespace UI {
                     b.ResetParents();
                 }
 
-                this.radio4.Active = true;
-            } catch (IOException) { filename.Text = "Not Found"; }
-            catch (InvalidOperationException e) { 
-                Console.WriteLine(e.Message);
-                filename.Text = "Invalid File";}
+                //this.radio4.Active = true;
+
+            
             this.ShowAll();
         }
     }
@@ -260,7 +279,7 @@ namespace UI {
         public ComboBoxText parent {get; set;} = new ComboBoxText();
         public Scale MassScale {get; set;}
         public Scale RadiusScale {get; set;}
-        public Scale SMAScale {get; set;}
+        public Scale SLRScale {get; set;}
         public Scale EScale {get; set;}
         public Scale IncScale {get; set;}
         public Scale ANLScale {get; set;}
@@ -270,15 +289,17 @@ namespace UI {
         public Scale GScale {get; set;}
         public Scale BScale {get; set;}
         public CheckButton CenterButton {get; set;}
-        public BodyBox() {
+        public static readonly double ECCENTRICITY_MAX = 3;
+        public BodyBox() {}
+        public BodyBox(bool homogeneous, int spacing) : base(homogeneous,spacing) {
             body = new Structures.Body();
             name = new Entry();
             name.IsEditable = true;
             ResetParents();
             MassScale = new Scale(Orientation.Vertical, 0.1,50,0.01);
             RadiusScale = new Scale(Orientation.Vertical, 0.1,1000000,0.1);
-            SMAScale = new Scale(Orientation.Vertical, 0.1,50,0.01);
-            EScale = new Scale(Orientation.Vertical, 0,3,0.001);
+            SLRScale = new Scale(Orientation.Vertical, 0.1,50,0.01);
+            EScale = new Scale(Orientation.Vertical, 0,ECCENTRICITY_MAX,0.001);
             IncScale = new Scale(Orientation.Vertical, 0,180,0.01);
             ANLScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
             PAScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
@@ -293,25 +314,42 @@ namespace UI {
             parent.Changed += new EventHandler(OnParentChange);
             MassScale.Inverted = true;
             RadiusScale.Inverted = true;
-            SMAScale.Inverted = true;
+            SLRScale.Inverted = true;
             EScale.Inverted = true;
             IncScale.Inverted = true;
             ANLScale.Inverted = true;
             PAScale.Inverted = true;
             TAScale.Inverted = true;
-            
+            var mBox = new VBox(homogeneous: false, spacing: 3);
+            mBox.PackStart(new Label("ln(m)"), false, false, 3); mBox.PackStart(MassScale, true, true, 3);
+            var rBox = new VBox(homogeneous: false, spacing: 3);
+            rBox.PackStart(new Label("r (km)"), false, false, 3); rBox.PackStart(RadiusScale, true, true, 3); 
+            var slrBox = new VBox(homogeneous: false, spacing: 3);
+            slrBox.PackStart(new Label("ρ (AU)"), false, false, 3); slrBox.PackStart(SLRScale, true, true, 3);
+            var eBox = new VBox(homogeneous: false, spacing: 3);
+            eBox.PackStart(new Label("e"), false, false, 3); eBox.PackStart(EScale, true, true, 3);
+            var incBox = new VBox(homogeneous: false, spacing: 3);
+            incBox.PackStart(new Label("i (°)"), false, false, 3); incBox.PackStart(IncScale, true, true, 3);
+            var anlBox = new VBox(homogeneous: false, spacing: 3);
+            anlBox.PackStart(new Label("Ω (°)"), false, false, 3); anlBox.PackStart(ANLScale, true, true, 3);
+            var paBox = new VBox(homogeneous: false, spacing: 3);
+            paBox.PackStart(new Label("ω (°)"), false, false, 3); paBox.PackStart(PAScale, true, true, 3);
+            var taBox = new VBox(homogeneous: false, spacing: 3);
+            taBox.PackStart(new Label("ν (°)"), false, false, 3); taBox.PackStart(TAScale, true, true, 3);
+
             this.PackStart(name, true, true, 3);
             this.PackStart(parent, false, false, 3);
-            this.PackStart(MassScale, true, true, 3);
-            this.PackStart(RadiusScale, true, true, 3);
-            this.PackStart(SMAScale, true, true, 3);
-            this.PackStart(EScale, true, true, 3);
-            this.PackStart(IncScale, true, true, 3);
-            this.PackStart(ANLScale, true, true, 3);
-            this.PackStart(PAScale, true, true, 3);
-            this.PackStart(TAScale, true, true, 3);
+            this.PackStart(mBox, true, true, 3);
+            this.PackStart(rBox, true, true, 3);
+            this.PackStart(slrBox, true, true, 3);
+            this.PackStart(eBox, true, true, 3);
+            this.PackStart(incBox, true, true, 3);
+            this.PackStart(anlBox, true, true, 3);
+            this.PackStart(paBox, true, true, 3);
+            this.PackStart(taBox, true, true, 3);
 
             var colorbox = new VBox(homogeneous: false, spacing: 3);
+            colorbox.PackStart(new Label("RGB"), false, false, 3);
             colorbox.PackStart(RScale, true, true, 3);
             colorbox.PackStart(GScale, true, true, 3);
             colorbox.PackStart(BScale, true, true, 3);
@@ -327,9 +365,9 @@ namespace UI {
             try {
                 var parentBody = Menu.new_bodies.FirstOrDefault(b => b.body.name == parent.ActiveText).body;
                 double hillrad = parentBody.HillRadius()/AU;
-                this.SMAScale.Digits = Math.Max(0,8);//3-(int)Math.Log(hillrad/100000));
-                this.SMAScale.SetIncrements(Math.Pow(10,-this.SMAScale.Digits),hillrad/100000);
-                this.SMAScale.SetRange(Math.Pow(10,-this.SMAScale.Digits),hillrad);
+                this.SLRScale.Digits = Math.Max(0,8);//3-(int)Math.Log(hillrad/100000));
+                this.SLRScale.SetIncrements(Math.Pow(10,-this.SLRScale.Digits),hillrad/100000);
+                this.SLRScale.SetRange(Math.Pow(10,-this.SLRScale.Digits),hillrad);
             } catch (NullReferenceException) {} // no parent, don't set values
         }
         /*protected void OnDeleteClick(object obj, EventArgs args) {
@@ -343,7 +381,7 @@ namespace UI {
         public void Set() {
             if (parent.ActiveText != this.name.Text && parent.Active != -1) {
                 var elements = new Structures.OrbitalElements() {
-                    semimajoraxis = SMAScale.Value*AU,
+                    semilatusrectum = SLRScale.Value*AU,
                     eccentricity = EScale.Value,
                     inclination = IncScale.Value*deg,
                     ascendingNodeLongitude = ANLScale.Value*deg,
@@ -358,7 +396,17 @@ namespace UI {
             body.color = new Vector3(RScale.Value, GScale.Value, BScale.Value);
         }
         public void SetElements(OrbitalElements elements) {
-            SMAScale.Value = elements.semimajoraxis/AU;
+            try {
+                if (elements.semilatusrectum > this.body.parent.HillRadius()/AU) {
+                    SLRScale.SetRange(1e-8,elements.semilatusrectum);
+                }
+            } catch (NullReferenceException) {} // body has no parent, we cannot check the slr
+            SLRScale.Value = elements.semilatusrectum/AU;
+            if (elements.eccentricity > ECCENTRICITY_MAX) {
+                EScale.SetRange(0,elements.eccentricity);
+            } else {
+                EScale.SetRange(0, ECCENTRICITY_MAX); // there is no way to see the current range, so we'll set it every time
+            }
             EScale.Value   = elements.eccentricity;
             IncScale.Value = elements.inclination/deg;
             ANLScale.Value = elements.ascendingNodeLongitude/deg;

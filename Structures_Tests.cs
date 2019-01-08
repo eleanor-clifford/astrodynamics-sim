@@ -81,20 +81,20 @@ namespace Structures {
         }
         public static bool OrbitalElementsTest() {
             var elem = new OrbitalElements() {
-                semimajoraxis = 1*AU,
+                semilatusrectum = 1*AU,
                 eccentricity = 0.027,
                 inclination = 30*deg,
                 ascendingNodeLongitude = 10*deg,
                 periapsisArgument = 15*deg,
                 trueAnomaly = 5*deg,
             };
-            Console.WriteLine(elem.semimajoraxis/AU);
+            Console.WriteLine(elem.semilatusrectum/AU);
             var sun = Structures.Examples.sun;
             var b = new Body(sun,elem);
             var fVectors = new FundamentalVectors(b.position,b.velocity,sun.stdGrav);
             Console.WriteLine(fVectors);
             var elem2 = new OrbitalElements(b.position,b.velocity,sun.stdGrav);
-            Console.WriteLine(elem2.semimajoraxis/AU);
+            Console.WriteLine(elem2.semilatusrectum/AU);
             return true;
         }
 
@@ -107,7 +107,7 @@ namespace Structures {
     			color = Vector3.zero
     		};
             var earthElements = new OrbitalElements {
-                semimajoraxis = 3.5*AU,
+                semilatusrectum = 3.5*AU,
                 eccentricity = 0.7,
                 inclination = 37*deg,
                 ascendingNodeLongitude = 128*deg,
@@ -121,7 +121,7 @@ namespace Structures {
                 new Tuple<string,double,double>("e",earthElements.eccentricity,           earthElements2.eccentricity),
                 new Tuple<string,double,double>("i",earthElements.inclination,            earthElements2.inclination),
                 new Tuple<string,double,double>("w",earthElements.periapsisArgument,      earthElements2.periapsisArgument),
-                new Tuple<string,double,double>("a",earthElements.semimajoraxis,          earthElements2.semimajoraxis),
+                new Tuple<string,double,double>("a",earthElements.semilatusrectum,          earthElements2.semilatusrectum),
                 new Tuple<string,double,double>("v",earthElements.trueAnomaly,            earthElements2.trueAnomaly),
             }) {
                 if ((t.Item2 - t.Item3)/t.Item2 > 1e-6) {
@@ -143,7 +143,7 @@ namespace Structures {
                     for (double k = 0; k < 2*Math.PI; k += 0.1) {
                         for (double l = 0; l < 2*Math.PI; l += 0.1) {
                             var elements = new OrbitalElements() {
-                                semimajoraxis = 1*AU,
+                                semilatusrectum = 1*AU,
                                 inclination = Math.PI,
                                 ascendingNodeLongitude = j,
                                 periapsisArgument = k,

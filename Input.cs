@@ -25,10 +25,7 @@ namespace Program {
 	    	if (args.Event.Key == Gdk.Key.f) {
 		    	if (Program.activesys == null) return;
 			    else {
-                    Program.activesys.center_index += 1;
-                    if (Program.activesys.center_index >= Program.activesys.centers.Count) {
-                        Program.activesys.center_index = -1;
-                    }
+                    Program.activesys.IterateCenter();
                     Program.sys_view.ClearPaths();
                 }
                 args.RetVal = true;
@@ -60,7 +57,6 @@ namespace Program {
             } else if (args.Event.Key == Gdk.Key.Page_Up) {
                 Program.sys_view.line_max += line_sensitivity;
             } else if (args.Event.Key == Gdk.Key.Escape) {
-                Console.WriteLine(Program.activesys.bodies.Count);
                 Program.sys_view.Stop();
                 Program.activesys.Stop();
                 Program.mainWindow.Destroy();
