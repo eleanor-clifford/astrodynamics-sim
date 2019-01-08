@@ -3,7 +3,7 @@
   <bodies>
     <Body>
       <name>Solus</name>
-      <stdGrav>1.3271244001799964E+20</stdGrav>
+      <stdGrav>2.3734723820479526E+20</stdGrav>
       <radius>139268400</radius>
       <position>
         <x>195927780004.1347</x>
@@ -25,7 +25,7 @@
       <name>Sol</name>
       <parent>
         <name>Solus</name>
-        <stdGrav>1.3271244001799964E+20</stdGrav>
+        <stdGrav>2.3734723820479526E+20</stdGrav>
         <radius>139268400</radius>
         <position>
           <x>195927780004.1347</x>
@@ -51,14 +51,14 @@
         <z>47006817193.58503</z>
       </position>
       <velocity>
-        <x>-372.50382819734659</x>
-        <y>9589.6429783806525</y>
-        <z>-5989.7917069262976</z>
+        <x>-3316.9356578560237</x>
+        <y>13684.130937226868</y>
+        <z>-8618.83897484482</z>
       </velocity>
       <color>
-        <x>1</x>
-        <y>1</y>
-        <z>0</z>
+        <x>0.25</x>
+        <y>0.25</y>
+        <z>0.56</z>
       </color>
     </Body>
     <Body>
@@ -67,7 +67,7 @@
         <name>Sol</name>
         <parent>
           <name>Solus</name>
-          <stdGrav>1.3271244001799964E+20</stdGrav>
+          <stdGrav>2.3734723820479526E+20</stdGrav>
           <radius>139268400</radius>
           <position>
             <x>195927780004.1347</x>
@@ -93,14 +93,14 @@
           <z>47006817193.58503</z>
         </position>
         <velocity>
-          <x>-372.50382819734659</x>
-          <y>9589.6429783806525</y>
-          <z>-5989.7917069262976</z>
+          <x>-3316.9356578560237</x>
+          <y>13684.130937226868</y>
+          <z>-8618.83897484482</z>
         </velocity>
         <color>
-          <x>1</x>
-          <y>1</y>
-          <z>0</z>
+          <x>0.25</x>
+          <y>0.25</y>
+          <z>0.56</z>
         </color>
       </parent>
       <stdGrav>1.266865349999999E+17</stdGrav>
@@ -111,9 +111,9 @@
         <z>49551758256.559677</z>
       </position>
       <velocity>
-        <x>-14810.397062831766</x>
-        <y>-13710.480099256827</y>
-        <z>-5569.1192841404918</z>
+        <x>-17754.828892490441</x>
+        <y>-9615.9921404106117</y>
+        <z>-8198.1665520590141</z>
       </velocity>
       <color>
         <x>0.71895966676826173</x>
@@ -122,10 +122,10 @@
       </color>
     </Body>
     <Body>
-      <name>Saturn</name>
+      <name>Ares</name>
       <parent>
         <name>Solus</name>
-        <stdGrav>1.3271244001799964E+20</stdGrav>
+        <stdGrav>2.3734723820479526E+20</stdGrav>
         <radius>139268400</radius>
         <position>
           <x>195927780004.1347</x>
@@ -143,22 +143,122 @@
           <z>0</z>
         </color>
       </parent>
-      <stdGrav>37236128564851360</stdGrav>
-      <radius>56603900</radius>
+      <stdGrav>108314037989677.23</stdGrav>
+      <radius>20000100</radius>
       <position>
         <x>154394194401.64777</x>
         <y>-109871847574.47626</y>
         <z>62338447911.1511</z>
       </position>
       <velocity>
-        <x>29021.510759058132</x>
-        <y>-52519.47796998077</y>
-        <z>1804.0246379014775</z>
+        <x>35992.352523760805</x>
+        <y>-69375.817434867669</y>
+        <z>1804.009929444175</z>
       </velocity>
       <color>
         <x>0.36141510867913057</x>
         <y>0.3805593555251558</y>
         <z>0.46848657909765851</z>
+      </color>
+    </Body>
+    <Body>
+      <name>Venus</name>
+      <parent>
+        <name>Sol</name>
+        <parent>
+          <name>Solus</name>
+          <stdGrav>2.3734723820479526E+20</stdGrav>
+          <radius>139268400</radius>
+          <position>
+            <x>195927780004.1347</x>
+            <y>-91888727433.6767</y>
+            <z>62338463602.811516</z>
+          </position>
+          <velocity>
+            <x>8356.3195702195462</x>
+            <y>-2548.5433907892843</y>
+            <z>1804.0682413990908</z>
+          </velocity>
+          <color>
+            <x>1</x>
+            <y>1</y>
+            <z>0</z>
+          </color>
+        </parent>
+        <stdGrav>1.0664698867864404E+20</stdGrav>
+        <radius>139268400</radius>
+        <position>
+          <x>861970514589.60083</x>
+          <y>-39853827980.637787</y>
+          <z>47006817193.58503</z>
+        </position>
+        <velocity>
+          <x>-3316.9356578560237</x>
+          <y>13684.130937226868</y>
+          <z>-8618.83897484482</z>
+        </velocity>
+        <color>
+          <x>0.25</x>
+          <y>0.25</y>
+          <z>0.56</z>
+        </color>
+      </parent>
+      <stdGrav>324860000000000</stdGrav>
+      <radius>6051800</radius>
+      <position>
+        <x>835428350170.64</x>
+        <y>-54123579397.51757</y>
+        <z>48343897903.7635</z>
+      </position>
+      <velocity>
+        <x>25143.717028386673</x>
+        <y>-39475.537137743646</y>
+        <z>-10988.124344353448</z>
+      </velocity>
+      <color>
+        <x>0.72900576136582407</x>
+        <y>0.71637682452381213</y>
+        <z>0.67915792131715791</z>
+      </color>
+    </Body>
+    <Body>
+      <name>Neptune</name>
+      <parent>
+        <name>Solus</name>
+        <stdGrav>2.3734723820479526E+20</stdGrav>
+        <radius>139268400</radius>
+        <position>
+          <x>195927780004.1347</x>
+          <y>-91888727433.6767</y>
+          <z>62338463602.811516</z>
+        </position>
+        <velocity>
+          <x>8356.3195702195462</x>
+          <y>-2548.5433907892843</y>
+          <z>1804.0682413990908</z>
+        </velocity>
+        <color>
+          <x>1</x>
+          <y>1</y>
+          <z>0</z>
+        </color>
+      </parent>
+      <stdGrav>6836529999999991</stdGrav>
+      <radius>24622000</radius>
+      <position>
+        <x>-1825917594621.8521</x>
+        <y>25467983932.651489</y>
+        <z>106537939381.38585</z>
+      </position>
+      <velocity>
+        <x>7948.4895035894688</x>
+        <y>-9633.1125247837</y>
+        <z>1959.1017806628106</z>
+      </velocity>
+      <color>
+        <x>0.55252447046234221</x>
+        <y>0.73838668051490264</y>
+        <z>0.868736820570925</z>
       </color>
     </Body>
   </bodies>
@@ -195,8 +295,26 @@
       <periapsisArgument>1.7967674211762068</periapsisArgument>
       <trueAnomaly>1.7534336883759396</trueAnomaly>
     </OrbitalElements>
+    <OrbitalElements>
+      <semilatusrectum>31069486596.730984</semilatusrectum>
+      <eccentricity>0.03</eccentricity>
+      <inclination>0.059248866650378151</inclination>
+      <ascendingNodeLongitude>1.3383305132010905</ascendingNodeLongitude>
+      <periapsisArgument>2.2956835759598584</periapsisArgument>
+      <trueAnomaly>0</trueAnomaly>
+    </OrbitalElements>
+    <OrbitalElements>
+      <semilatusrectum>871064205387.159</semilatusrectum>
+      <eccentricity>0.57</eccentricity>
+      <inclination>0.030877841527506698</inclination>
+      <ascendingNodeLongitude>2.2989771867912894</ascendingNodeLongitude>
+      <periapsisArgument>3.9264672182116431</periapsisArgument>
+      <trueAnomaly>3.1415926535897931</trueAnomaly>
+    </OrbitalElements>
   </elements>
   <centers>
+    <boolean>false</boolean>
+    <boolean>false</boolean>
     <boolean>false</boolean>
     <boolean>false</boolean>
     <boolean>false</boolean>
@@ -204,5 +322,5 @@
   </centers>
   <timestep>200</timestep>
   <radius_multiplier>100</radius_multiplier>
-  <line_max>280</line_max>
+  <line_max>150</line_max>
 </SaveData>
