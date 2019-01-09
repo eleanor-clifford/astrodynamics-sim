@@ -48,9 +48,14 @@ namespace Program {
     }
     
         static void Main(string[] args) {
-            Application.Init();
-            var menu = new UI.Menu();
-            Application.Run();
+            try {
+                Application.Init();
+                var menu = new UI.Menu();
+                Application.Run();
+            } catch (Exception e) {
+                Console.WriteLine("An unexpected error occured");
+                Console.WriteLine($"{e.Message}\n{e.StackTrace}");
+            }
         }
     }
 }

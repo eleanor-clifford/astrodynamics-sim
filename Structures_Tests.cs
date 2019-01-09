@@ -30,6 +30,10 @@ namespace Structures {
                 Console.WriteLine($"Matrix3.Inverse(i) == \n{Matrix3.Inverse(a)} != \n{a_inv}");
                 return false;
             }
+            if (Matrix3.Inverse(Matrix3.Inverse(a)) != a) {
+                Console.WriteLine("inv(inv(a)) != a");
+                return false; 
+            }
             try {
                 Matrix3.Inverse(new Matrix3(Vector3.zero,Vector3.zero,Vector3.zero));
                 Console.WriteLine("No Exception on Inverse of Singular Matrix");
@@ -67,7 +71,7 @@ namespace Structures {
                 Console.WriteLine("Incorrect Magnitude");
                 return false;
             }
-            if (Vector3.dot(a,z) != 0 || Vector3.dot(a,a) != 49) {
+            if (Vector3.dot(new Vector3(1,2,0),new Vector3(-2,1,0)) != 0 || Vector3.dot(a,a) != 49) {
                 Console.WriteLine("incorrect dot");
                 return false;
             }
@@ -77,90 +81,119 @@ namespace Structures {
                 return false;
             }
             var exp = new Vector3(1000,0,-100);
-            return true;
-        }
-        public static bool OrbitalElementsTest() {
-            var elem = new OrbitalElements() {
-                semilatusrectum = 1*AU,
-                eccentricity = 0.027,
-                inclination = 30*deg,
-                ascendingNodeLongitude = 10*deg,
-                periapsisArgument = 15*deg,
-                trueAnomaly = 5*deg,
-            };
-            Console.WriteLine(elem.semilatusrectum/AU);
-            var sun = Structures.Examples.sun;
-            var b = new Body(sun,elem);
-            var fVectors = new FundamentalVectors(b.position,b.velocity,sun.stdGrav);
-            Console.WriteLine(fVectors);
-            var elem2 = new OrbitalElements(b.position,b.velocity,sun.stdGrav);
-            Console.WriteLine(elem2.semilatusrectum/AU);
+            try {
+                Console.WriteLine(Vector3.Unit(Vector3.zero));
+                Console.WriteLine("Unit(zero) did not throw exception");
+                return false;
+            } catch (DivideByZeroException) {
+            } catch (Exception) {
+                Console.WriteLine("Incorrect exception");
+                return false;
+            }
+            if (Vector3.PolarToCartesian(Vector3.CartesianToPolar(a)) != a) {
+                var b = Vector3.PolarToCartesian(Vector3.CartesianToPolar(a));
+                Console.WriteLine((a.x - b.x)/a.x);
+                Console.WriteLine("Cartesian-Polar conversions failed");
+                return false;
+            }
+            Vector3 c = null;
+            Vector3 d = null;
+            if (a == c || c != d) {
+                Console.WriteLine("Null checks incorrect");
+                return false;
+            }
             return true;
         }
 
         public static bool BodyTest() {
             var sun = new Body {
-    			stdGrav = 4.47e20,
-    			radius = 6.95e10, // 100x
-    			position = Vector3.zero,
-    			velocity = Vector3.zero,
-    			color = Vector3.zero
-    		};
-            var earthElements = new OrbitalElements {
-                semilatusrectum = 3.5*AU,
-                eccentricity = 0.7,
-                inclination = 37*deg,
-                ascendingNodeLongitude = 128*deg,
-                periapsisArgument = 250*deg,
-                trueAnomaly = 7*deg
+    			stdGrav = 1.3271440019e20,
+    			radius = 6.95e8
             };
-            var earth1 = new Body(sun,earthElements);
-            var earthElements2 = new OrbitalElements(earth1.position,earth1.velocity,sun.stdGrav);
-            foreach (Tuple<string,double,double> t in new List<Tuple<string,double,double>>() {
-                new Tuple<string,double,double>("l",earthElements.ascendingNodeLongitude, earthElements2.ascendingNodeLongitude),
-                new Tuple<string,double,double>("e",earthElements.eccentricity,           earthElements2.eccentricity),
-                new Tuple<string,double,double>("i",earthElements.inclination,            earthElements2.inclination),
-                new Tuple<string,double,double>("w",earthElements.periapsisArgument,      earthElements2.periapsisArgument),
-                new Tuple<string,double,double>("a",earthElements.semilatusrectum,          earthElements2.semilatusrectum),
-                new Tuple<string,double,double>("v",earthElements.trueAnomaly,            earthElements2.trueAnomaly),
-            }) {
-                if ((t.Item2 - t.Item3)/t.Item2 > 1e-6) {
-                    Console.WriteLine($"Orbital element test failed: {t.Item1}, {t.Item2}, {t.Item3}, {((t.Item2 - t.Item3)/t.Item2)*100}%");
-                    return false;
-                }
-            }
-            var expected_position = AU * new Vector3(0.7104623753,0.4739122976,-0.6417428577);
-            var expected_velocity = new Vector3(-31555.21806,60479.93979,-9320.949522);
-            if (Math.Abs(Vector3.Magnitude(earth1.position - expected_position))/Vector3.Magnitude(expected_position) > Math.Pow(10,-6)) {
+            var elem = new OrbitalElements() {
+                semilatusrectum = 3.2*AU,
+                eccentricity = 0.7,
+                inclination = 1.2,
+                ascendingNodeLongitude = 0.1,
+                periapsisArgument = 4.3,
+                trueAnomaly = 3.7
+            };
+            Body sun2 = (Body)sun.Clone();
+            sun2.position += new Vector3(3,2,6);
+            sun2.velocity += new Vector3(1,5,3);
+            var e1 = new Body(sun,elem);
+            var e2 = new Body(sun2,elem);
+            e2.position -= new Vector3(3,2,6);
+            e2.velocity -= new Vector3(1,5,3);
+            if (e1.position != e2.position || e1.velocity != e2.velocity) {
+                Console.WriteLine("Parent r/v not considered");
                 return false;
             }
-            if (Math.Abs(Vector3.Magnitude(earth1.velocity - expected_velocity))/Vector3.Magnitude(expected_velocity) > Math.Pow(10,-6)) {
-                return false;
-            }
-            sun.stdGrav = 1.3271440019e20;
-            for (double i = 0; i < 2*Math.PI; i += 0.1) {
-                for (double j = 0; j < 2*Math.PI; j += 0.1) {
-                    for (double k = 0; k < 2*Math.PI; k += 0.1) {
-                        for (double l = 0; l < 2*Math.PI; l += 0.1) {
-                            var elements = new OrbitalElements() {
-                                semilatusrectum = 1*AU,
-                                inclination = Math.PI,
-                                ascendingNodeLongitude = j,
-                                periapsisArgument = k,
-                                trueAnomaly = l
-                            };
-                            var earth = new Body(sun,elements){
-            	        		stdGrav = 3.986004419e14,
-            			        radius = 6.371e8, // 100x
-    		        	        color = new Vector3(0,0.2,0.8),
-    		                };
-                            if (!(Math.Abs(Vector3.Magnitude(earth.velocity) - 3e4) < 1e3 )) {
-                                Console.WriteLine($"{i},{j},{k},{l},{earth.velocity}");
-                                return false;
+            for (double i = 0; i < Math.PI; i += 0.2) {
+                for (double j = 0; j < 2*Math.PI; j += 0.2) {
+                    for (double k = 0; k < 2*Math.PI; k += 0.2) {
+                        for (double l = 0; l < 2*Math.PI; l += 0.2) {
+                            for (double m = 0; l < 1; l+= 0.1) {
+                                var earthElements = new OrbitalElements() {
+                                    semilatusrectum = 1*AU,
+                                    eccentricity = m,
+                                    inclination = i,
+                                    ascendingNodeLongitude = j,
+                                    periapsisArgument = k,
+                                    trueAnomaly = l
+                                };
+                                var earth = new Body(sun,earthElements){
+            	        		    stdGrav = 3.986004419e14,
+                			        radius = 6.371e6,
+        		        	        color = new Vector3(0,0.2,0.8),
+    	    	                };
+                                if (m == 0) {
+                                    if (!(Math.Abs(Vector3.Magnitude(earth.velocity) - 3e4) < 1e3 )) {
+                                        Console.WriteLine($"{i},{j},{k},{l},{earth.velocity}");
+                                        return false;
+                                    } else if (!(Math.Abs(Vector3.Magnitude(earth.position) - 1*AU) < 1e-4 )) {
+                                        Console.WriteLine($"{i},{j},{k},{l},{Vector3.Magnitude(earth.position)/AU}");
+                                        return false;
+                                    }
+                                }
+                                var earthElements2 = new OrbitalElements(earth.position,earth.velocity,sun.stdGrav);
+                                foreach (Tuple<string,double,double> t in new List<Tuple<string,double,double>>() {
+                                    new Tuple<string,double,double>("l",earthElements.ascendingNodeLongitude, earthElements2.ascendingNodeLongitude),
+                                    new Tuple<string,double,double>("e",earthElements.eccentricity,           earthElements2.eccentricity),
+                                    new Tuple<string,double,double>("i",earthElements.inclination,            earthElements2.inclination),
+                                    new Tuple<string,double,double>("w",earthElements.periapsisArgument,      earthElements2.periapsisArgument),
+                                    new Tuple<string,double,double>("p",earthElements.semilatusrectum,        earthElements2.semilatusrectum),
+                                    new Tuple<string,double,double>("v",earthElements.trueAnomaly,            earthElements2.trueAnomaly),
+                                }) {
+                                    if ((t.Item2 - t.Item3)/t.Item2 > 1e-6) {
+                                        if (t.Item1 == "l" && i == 0
+                                         || (t.Item1 == "w" || t.Item1 == "v") && m == 0) {
+                                             // They are undefined, don't worry
+                                             continue;
+                                        } 
+                                        Console.WriteLine($"Orbital element test failed: {t.Item1}, {t.Item2}, {t.Item3}, {((t.Item2 - t.Item3)/t.Item2)*100}%");
+                                        return false;
+                                    }
+                                }
                             }
                         }
                     }
                 }
+            }
+            var elemx = new OrbitalElements() {
+                inclination = 2*Math.PI,
+                ascendingNodeLongitude = 7.5*Math.PI,
+                trueAnomaly = 27*Math.PI,
+                periapsisArgument = 3.75*Math.PI
+            };
+            if (
+                elemx.inclination > 1e-10 ||
+                (elemx.ascendingNodeLongitude - (1.5*Math.PI))/(1.5*Math.PI) > 1e-10 ||
+                (elemx.trueAnomaly - Math.PI)/Math.PI > 1e-10 ||
+                (elemx.periapsisArgument-1.75*Math.PI)/(1.75*Math.PI) > 1e-10
+            ) {
+                Console.WriteLine("Implicit angle readjustment failed");
+                Console.WriteLine(elemx.trueAnomaly/Math.PI);
             }
             return true;
         }
