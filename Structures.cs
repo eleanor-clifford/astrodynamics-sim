@@ -28,26 +28,23 @@ namespace Structures
 			return $"Vector3({x},{y},{z})";
 		}
 		public static bool operator== (Vector3 a, Vector3 b) {
-			try {
-				double x = a.x;
-			} catch (NullReferenceException) {
-				// a is null vector
-				try {
-					double y = b.x;
-					// y is not null vector, so return false
-					return false;
-				} catch (NullReferenceException) {
-					// a == b == null, return true
-					return true;}
-			} try {
-				//
-				double x = b.x;
-			} catch (NullReferenceException) {
-				// a is not null, b is null, return false
-				return false;
+			// why reimplement null checks ourselves?
+			if ((object)a == null || ((object)b == null)) return (object)a == null && (object)b == null;
+			// otherwise return true if all components are within 10^-10
+			bool[] eq = new bool[3];
+			for (int i = 0; i < 3; i++) {
+				double a1,b1;
+				if (i == 0) {a1 = a.x; b1 = b.x;}
+				else if (i == 1) {a1 = a.y; b1 = b.y;}
+				else {a1 = a.z; b1 = b.z;}
+				if (Math.Abs(a1) < 1e-2 || Math.Abs(b1) < 1e-2) {
+					eq[i] = Math.Abs(a1 - b1) < 1e-10;
+				} else {
+					eq[i] = Math.Abs((a1-b1)/a1) < 1e-10 
+					     && Math.Abs((a1-b1)/b1) < 1e-10;
+				}
 			}
-			// otherwise return true if all components are equal
-			return a.x == b.x && b.y == b.y && a.z == b.z;
+			return eq[0] && eq[1] && eq[2];
 		}
 		public static bool operator!= (Vector3 a, Vector3 b) {
 			// inverse of equality operator
@@ -84,6 +81,9 @@ namespace Structures
 			return Math.Sqrt(Math.Pow(v.x,2)+Math.Pow(v.y,2)+Math.Pow(v.z,2));
 		}
 		public static Vector3 Unit(Vector3 v) {
+			if (v == Vector3.zero) {
+				throw new DivideByZeroException("Cannot take unit of zero vector");
+			}
 			return v / Vector3.Magnitude(v);
 		}
 		public static double UnitDot(Vector3 a, Vector3 b) {
@@ -379,10 +379,38 @@ namespace Structures
 		// The six classical orbital elements
 		public double semilatusrectum {get; set;}
 		public double eccentricity {get; set;}
-		public double inclination {get; set;}
-		public double ascendingNodeLongitude {get; set;}
-		public double periapsisArgument {get; set;}
-		public double trueAnomaly {get; set;}
+		protected double _inclination;
+		public double inclination {
+			get {
+				return _inclination;
+			} set {
+				_inclination = value%Math.PI;
+			}
+		}
+		protected double _ascendingNodeLongitude;
+		public double ascendingNodeLongitude { 
+			get {
+				return _ascendingNodeLongitude;
+			} set {
+				_ascendingNodeLongitude = value%(2*Math.PI);
+			}
+		}
+		protected double _periapsisArgument;
+		public double periapsisArgument {
+			get {
+				return _periapsisArgument;
+			} set {
+				_periapsisArgument = value%(2*Math.PI);
+			}
+		}
+		protected double _trueAnomaly;
+		public double trueAnomaly {
+			get {
+				return _trueAnomaly;
+			} set {
+				_trueAnomaly = value%(2*Math.PI);
+			}
+		}
 		public OrbitalElements() {} // For serialisation
 		public OrbitalElements(Vector3 position, Vector3 velocity, double stdGrav) {
 			// stdGrav is the gravitational parameter of the parent body
@@ -396,11 +424,15 @@ namespace Structures
 			double cosAscNodeLong = fVectors.node.x/Vector3.Magnitude(fVectors.node);
 			if (fVectors.node.y >= 0) this.ascendingNodeLongitude = Math.Acos(cosAscNodeLong);
 			else this.ascendingNodeLongitude = 2*Math.PI - Math.Acos(cosAscNodeLong);
-			double cosPeriArg = Vector3.UnitDot(fVectors.node,fVectors.eccentricity);
-			if (fVectors.eccentricity.z >= 0) this.periapsisArgument = Math.Acos(cosPeriArg);
-			else this.periapsisArgument = 2*Math.PI - Math.Acos(cosPeriArg);
-			
-			var cosAnomaly = Vector3.UnitDot(fVectors.eccentricity,position);
+			double cosAnomaly = 0;
+			try {
+				double cosPeriArg = Vector3.UnitDot(fVectors.node,fVectors.eccentricity);
+				if (fVectors.eccentricity.z >= 0) this.periapsisArgument = Math.Acos(cosPeriArg);
+				else this.periapsisArgument = 2*Math.PI - Math.Acos(cosPeriArg);
+				cosAnomaly = Vector3.UnitDot(fVectors.eccentricity,position);
+			} catch (DivideByZeroException) {
+				// This will be dealt with along with extremely small values below
+			}
 			if (this.eccentricity < 1e-10 ) {
 				// acceptable error, the orbit has no periapsis
 				this.eccentricity = 0;
@@ -415,8 +447,8 @@ namespace Structures
 			}
 			if (Vector3.UnitDot(position,velocity) >= 0) this.trueAnomaly = Math.Acos(cosAnomaly);
 			else this.trueAnomaly = 2*Math.PI - Math.Acos(cosAnomaly);
-			if (fVectors.angularMomentum.x/fVectors.angularMomentum.z < 1e-10
-			 && fVectors.angularMomentum.y/fVectors.angularMomentum.z < 1e-10) {
+			if (Math.Abs(fVectors.angularMomentum.x/fVectors.angularMomentum.z) < 1e-10
+			 && Math.Abs(fVectors.angularMomentum.y/fVectors.angularMomentum.z) < 1e-10) {
 				// acceptable error, the orbit is not inclined
 				this.ascendingNodeLongitude = 0;
 			}
