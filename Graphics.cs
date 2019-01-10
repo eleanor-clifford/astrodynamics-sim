@@ -22,12 +22,13 @@ namespace Graphics {
 		}
 	}
 	class SystemView : DrawingArea {
-		public PlanetarySystem sys {get; private set;}
-		public Camera camera {get; set;} = new Camera(1*AU,Vector3.zero);
-		public double bounds_multiplier {get; set;} = 0.5;
+		
+		public Camera camera {get; set;} = new Camera(50*AU,Vector3.zero);
 		public double radius_multiplier {get; set;} = 1;
-		public double line_multiplier {get; set;} = 0.8;
 		public int line_max {get; set;} = 100;
+		public double bounds_multiplier {get; set;} = 0.25;
+		protected PlanetarySystem sys;
+		protected readonly double line_multiplier = 0.8;
 		protected bool playing = false;
 		protected List<Vector3>[] paths;
 		protected int[] order;
@@ -67,11 +68,14 @@ namespace Graphics {
 			playing = false;
 		}
 		protected override bool OnDrawn (Cairo.Context ctx) {
+			// color the screen black
 			ctx.SetSourceRGB(0,0,0);
 			ctx.Paint();
+			// Normally (0,0) is in the corner, but we want it in the middle, so we must translate:
 			ctx.Translate(AllocatedWidth/2,AllocatedHeight/2);
-			ctx.Scale(0.5,0.5);
 			var bounds = bounds_multiplier * max * new Vector3(1,1,1);
+			// we care about the limiting factor, since most orbits will be bounded roughly by a square
+			// but screens are rectangular
 			var scale = Math.Min(AllocatedWidth/bounds.x,AllocatedHeight/bounds.y);
 			ctx.Scale(scale,scale);
 			if (paths == null) {

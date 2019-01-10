@@ -35,12 +35,8 @@ namespace Program {
             mainWindow.MotionNotifyEvent += Input.MouseMovement;
             mainWindow.ScrollEvent += Input.Scroll;
             sys_view = new SystemView(activesys);
-            sys_view.camera = new Camera(50*AU,new Vector3(0,0,0));
             sys_view.radius_multiplier = radius_multiplier;
             sys_view.line_max = line_max;
-            sys_view.line_multiplier = 0.8;
-            sys_view.bounds_multiplier = 1;
-            //sys_view.perspective_scale = 0.5;
             mainWindow.Add(sys_view);
             activesys.StartAsync(step: timestep); // Start Mechanics
             sys_view.PlayAsync(interval: 0); // Start Display
