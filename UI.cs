@@ -13,7 +13,7 @@ namespace UI {
 		protected VBox radiobox;
 		protected ScrolledWindow systemscrollbox;
 		protected VBox systembox;
-		protected VBox donebox;
+		protected HBox donebox;
 		protected Scale TimestepScale;
 		protected Scale RScale;
 		protected Scale LineScale;
@@ -38,7 +38,7 @@ namespace UI {
 			radiobox = new VBox(homogeneous: false, spacing: 3);
 			systemscrollbox = new ScrolledWindow();
 			systembox = new VBox(homogeneous: false, spacing: 3);
-			donebox = new VBox(homogeneous: false, spacing: 3);
+			donebox = new HBox(homogeneous: false, spacing: 3);
 
 			var l1 = new Label("Mechanics Timestep");
 			var l2 = new Label("Planetary Radii Multiplier");
@@ -71,7 +71,11 @@ namespace UI {
 			addBox.PackStart(loadButton, true, false, 3);
 			var doneButton = new Button("Done");
 			doneButton.Clicked += new EventHandler (OnDoneClick);
-			
+			var exitButton = new Button("Exit");
+			exitButton.Clicked += new EventHandler(delegate{
+				Application.Quit();
+			});
+
 			var optionsbox = new HBox(homogeneous: false, spacing: 3);
 			var optionbox1 = new VBox(homogeneous: false, spacing: 3);
 			var optionbox2 = new VBox(homogeneous: false, spacing: 3);
@@ -90,7 +94,9 @@ namespace UI {
 			radiobox.PackStart(addButton, false, false, 3);
 			radiobox.PackStart(addBox, false, false, 3);
 			systemscrollbox.Add(systembox);
-			donebox.PackStart(doneButton, false, false, 3);
+			donebox.PackStart(doneButton, true, true, 3);
+			donebox.PackStart(exitButton, true, true, 3);
+
 
 			containerbox.PackStart(radiobox, false, false, 3);
 			containerbox.PackStart(systemscrollbox, true, true, 3);
