@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,7 +64,7 @@ namespace Program {
             
                 var menu = new UI.Menu();
                 var data = new UI.SaveData() {
-                    bodies = Program.activesys.bodies,
+                    bodies = ((IEnumerable<Body>)Program.activesys).ToList(),
                     centers = Program.CustomCenters,
                     timestep = Program.timestep,
                     radius_multiplier = Program.sys_view.radius_multiplier,

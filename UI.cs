@@ -134,7 +134,7 @@ namespace UI {
 			var bodyBox = new BodyBox(menu: this, homogeneous: false, spacing: 3);
 			String bString = bCombo.ActiveText;
 			if (bString != "Custom") {
-				var body = Examples.solar_system.bodies.First(b => b.name == bString);
+				var body = Examples.solar_system.First(b => b.name == bString);
 				if (!(body.parent == null || new_bodies.Exists(b => b.name.Text == body.parent.name))) {
 					body = std_bodies.First(b => b.name == bString);
 				}

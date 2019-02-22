@@ -10,5 +10,7 @@ class Tests {
         else Console.WriteLine("Matrix test failed");
         if (BodyTest()) Console.WriteLine("Body test complete");
         else Console.WriteLine("Body test failed");
+        if (PlanetarySystemTest()) Console.WriteLine("Planetary system test complete");
+        else Console.WriteLine("Planetary system test failed");
     }
 }
