@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using static Program.Constants;
 using System.Threading;
@@ -6,9 +7,9 @@ using System.Threading.Tasks;
 using System.Linq;
 namespace Structures
 {
-    public class PlanetarySystem {
+    public class PlanetarySystem : IEnumerable<Body> {
 		protected bool running = false;
-		public List<Body> bodies {get; protected set;}
+		protected List<Body> bodies;
 		public List<int> centers {get; set;} = new List<int>();
 		// -1 indicates space is not locked
 		public int center_index = -1;
@@ -16,13 +17,27 @@ namespace Structures
 			if (bodies == null) this.bodies = new List<Body>();
 			else this.bodies = bodies;
 		}
+
+
+		public Body this[int key] {
+    		get {
+        		return this.bodies[key];
+    		}
+		}
+		public IEnumerator<Body> GetEnumerator() { return this.bodies.GetEnumerator(); }
+		IEnumerator IEnumerable.GetEnumerator() { return this.bodies.GetEnumerator(); }
+		public int Count {
+			get {
+				return this.bodies.Count;
+			}
+		}
 		public void Add(Body body) {
 			bodies.Add(body);
 		}
 		public Vector3 Barycenter() {
 			Vector3 weighted_center = Vector3.zero;
 			double mu_total = 0;
-			foreach (Body b in this.bodies) {
+			foreach (Body b in this) {
 				mu_total += b.stdGrav;
 				weighted_center += b.stdGrav*b.position;
 			}
@@ -37,20 +52,20 @@ namespace Structures
 		public Vector3 origin {
 			get {
 				if (this.center_index == -1) return this.Barycenter();
-				else return this.bodies[this.centers[this.center_index]].position;
+				else return this[this.centers[this.center_index]].position;
 			}
 		}
 		protected Vector3[] GetAcceleration() {
-			Vector3[] acceleration = new Vector3[this.bodies.Count];
+			Vector3[] acceleration = new Vector3[this.Count];
 			// Initialise our array to Vector3.zero, since the default is a null pointer.
-			Parallel.For (0, this.bodies.Count, i => {
+			Parallel.For (0, this.Count, i => {
 				acceleration[i] = Vector3.zero;
 			});
-			for (int i = 0; i < this.bodies.Count; i++) {
+			for (int i = 0; i < this.Count; i++) {
 				// We will need the index later so foreach is not possible
-				Body body1 = this.bodies[i];
-				for (int j = i + 1; j < this.bodies.Count; j++) {
-					Body body2 = this.bodies[j]; // Again here
+				Body body1 = this[i];
+				for (int j = i + 1; j < this.Count; j++) {
+					Body body2 = this[j]; // Again here
 					// The magnitude of the force, multiplied by G, = %mu_1 * %mu_2 / r^2
 					double mag_force_g = body1.stdGrav * body2.stdGrav / Math.Pow(Vector3.Magnitude(body1.position - body2.position),2);
 					// We lost direction in the previous calculation (since we had to square the vector), but we need it.
@@ -67,7 +82,7 @@ namespace Structures
 		protected void TimeStep(double step) {
 			var acceleration = this.GetAcceleration();
 			for (int i = 0; i < acceleration.Length; i++) {
-				Body body = this.bodies[i];
+				Body body = this[i];
 				Vector3 a = acceleration[i];
 				body.position += step*body.velocity + Math.Pow(step,2)*a/2;
 				body.velocity += step*a;

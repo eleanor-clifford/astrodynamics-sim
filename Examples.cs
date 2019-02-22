@@ -222,7 +222,6 @@ namespace Structures {
 					color = new Vector3(0.732870760490961,0.6071190239708979,0.4988704626052213)
 				}
 			});
-			inner_solar_system = new PlanetarySystem(solar_system.bodies.Take(5).ToList());
 		}
 	}
 }

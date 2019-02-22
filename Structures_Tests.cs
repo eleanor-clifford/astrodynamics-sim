@@ -75,6 +75,10 @@ namespace Structures {
                 Console.WriteLine("incorrect dot");
                 return false;
             }
+            if (Vector3.cross(new Vector3(3,-3,1), new Vector3(4,9,2)) != new Vector3(-15,-2,39)) {
+                Console.WriteLine("incorrect cross");
+                return false;
+            }
             var a_u = new Vector3((double)2/7,(double)3/7,(double)6/7);
             if (Vector3.Unit(a) != a_u) {
                 Console.WriteLine("incorrect unit");
@@ -194,6 +198,46 @@ namespace Structures {
             ) {
                 Console.WriteLine("Implicit angle readjustment failed");
                 Console.WriteLine(elemx.trueAnomaly/Math.PI);
+            }
+            return true;
+        }
+        public static bool PlanetarySystemTest() {
+            List<Body> bodies = Structures.Examples.solar_system_bodies;
+            var sys = new PlanetarySystem(bodies);
+            if ((IEnumerator<Body>)bodies.GetEnumerator() != sys.GetEnumerator()) {
+                Console.WriteLine("Constructor does not add bodies");
+                return false;
+            }
+            var b = Structures.Examples.solar_system_bodies[3];
+            sys.Add(b);
+            if (sys[sys.Count - 1] != b) {
+                Console.WriteLine("Add() failed");
+                return false;
+            }
+            var position1 = new Vector3(2,-4,12);
+            sys = new PlanetarySystem(new List<Body>() {
+                new Body() {stdGrav = 10},
+                new Body() {
+                    stdGrav = 20,
+                    position = position1
+                }
+            });
+            if (sys.Barycenter() != 2*position1/3) {
+                Console.WriteLine("Barycenter 1 incorrect");
+                return false;
+            }
+            sys[1].stdGrav /= 2;
+            var position1polar = Vector3.CartesianToPolar(position1);
+            var position2polar = new Vector3(position1polar.x,position1polar.y + Math.PI/3,position1polar.z);
+            sys.Add(new Body {
+                stdGrav = 10,
+                position = Vector3.PolarToCartesian(position2polar)
+            });
+            double distance = Math.Sqrt(3)/3;
+            Vector3 expected_barycenter_polar = new Vector3(distance*position1polar.x,position1polar.y + Math.PI/6,position1polar.z);
+            if (sys.Barycenter() != Vector3.PolarToCartesian(expected_barycenter_polar)) {
+                Console.WriteLine("Barycenter 2 incorrect");
+                return false;
             }
             return true;
         }

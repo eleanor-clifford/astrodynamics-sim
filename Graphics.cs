@@ -38,10 +38,10 @@ namespace Graphics {
 			Redraw();
 		}
 		public void Redraw() {
-			order = new int[sys.bodies.Count];
-			for (int i = 0; i < sys.bodies.Count; i++) order[i] = i;
+			order = new int[sys.Count];
+			for (int i = 0; i < sys.Count; i++) order[i] = i;
 			max = 0;
-			foreach (Body b in sys.bodies) {
+			foreach (Body b in sys) {
 				var p = Vector3.Magnitude(camera.Transform(b.position));
 				if (p > max) {
 					max = p;
@@ -49,8 +49,8 @@ namespace Graphics {
 			} 
 		}
 		public void ClearPaths() {
-			this.paths = new List<Vector3>[sys.bodies.Count];
-			for (int i = 0; i < sys.bodies.Count; i++) {
+			this.paths = new List<Vector3>[sys.Count];
+			for (int i = 0; i < sys.Count; i++) {
 				this.paths[i] = new List<Vector3>();
 			}
 		}
@@ -82,9 +82,9 @@ namespace Graphics {
 				this.ClearPaths();
 			}
 			var origin = Program.Program.activesys.origin;
-			order = order.OrderByDescending(x => Vector3.Magnitude(sys.bodies[x].position - camera.position)).ToArray();
-			for (int i = 0; i < sys.bodies.Count; i++) {
-				Body body = sys.bodies[order[i]];
+			order = order.OrderByDescending(x => Vector3.Magnitude(sys[x].position - camera.position)).ToArray();
+			for (int i = 0; i < sys.Count; i++) {
+				Body body = sys[order[i]];
 				var r = radius_multiplier * body.radius;
 				ctx.LineWidth = line_multiplier * radius_multiplier * body.radius;
 				Vector3 lastPath = Vector3.zero;
