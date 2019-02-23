@@ -87,39 +87,27 @@ namespace Graphics {
 				Body body = sys[order[i]];
 				var r = radius_multiplier * body.radius;
 				ctx.LineWidth = line_multiplier * radius_multiplier * body.radius;
-				Vector3 lastPath = Vector3.zero;
+				var cl = body.color;
+				ctx.SetSourceRGB (cl.x,cl.y,cl.z);
+				Vector3 pos = camera.Transform(body.position) - camera.Transform(origin);
+				ctx.Arc(pos.x,pos.y,r,0,2*Math.PI);
+				ctx.Fill();
+				Vector3 lastPath;
 				try {
-					lastPath = paths[order[i]][0];
-				} catch (ArgumentOutOfRangeException) {};
-				for (int j = -1; j < paths[order[i]].Count; j++) {
-					
-					Vector3 true_position;
-					if (j == -1) true_position = body.position;
-					else true_position = paths[order[i]][j] + origin;
-					Vector3 pos;
+					lastPath = camera.Transform(paths[order[i]][0] + origin) - camera.Transform(origin);
+				} catch (ArgumentOutOfRangeException) {
+					lastPath = Vector3.zero;
+				}
+				foreach (Vector3 p in paths[order[i]]) {
+					Vector3 true_position = p + origin;
 					pos = camera.Transform(true_position) - camera.Transform(origin);
-					var cl = body.color;
-					ctx.SetSourceRGB (cl.x,cl.y,cl.z);
-					if (j == -1) {
-						ctx.Arc(pos.x,pos.y,r,0,2*Math.PI);
-						ctx.Fill();
-					}
-					else if (j > 0) {
-						ctx.MoveTo(lastPath.x,lastPath.y);
-						ctx.LineTo(pos.x,pos.y);
-						ctx.Stroke();
-					} lastPath = pos;
-
+					ctx.MoveTo(lastPath.x,lastPath.y);
+					ctx.LineTo(pos.x,pos.y);
+					ctx.Stroke();
+					lastPath = pos;
 				}
 				paths[order[i]].Add(body.position - origin);
-				if (paths[order[i]].Count > line_max + 1) {
-                    // if line_max has been reduced the paths must be removed faster than they can be created
-                    paths[order[i]].RemoveAt(0);
-					paths[order[i]].RemoveAt(0);
-				}
-				else if (paths[order[i]].Count > line_max) {
-					paths[order[i]].RemoveAt(0);
-				}
+				if (paths[order[i]].Count > line_max) paths[order[i]] = paths[order[i]].TakeLast(line_max).ToList();
 			}
 			return true;
 		}
