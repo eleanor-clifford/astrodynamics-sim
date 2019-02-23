@@ -10,7 +10,7 @@ test:
 	mono Tests.exe
 	rm Tests.exe*
 clean:
-	-sudo /usr/bin/astrodynamics-sim
+	-sudo rm /usr/bin/astrodynamics-sim
 	-rm Program.exe*
 	-rm run.sh
 	-rm log.txt
