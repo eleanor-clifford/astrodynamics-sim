@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static Program.Constants;
 namespace Structures {
     public static class Tests {
@@ -204,7 +205,7 @@ namespace Structures {
         public static bool PlanetarySystemTest() {
             List<Body> bodies = Structures.Examples.solar_system_bodies;
             var sys = new PlanetarySystem(bodies);
-            if ((IEnumerator<Body>)bodies.GetEnumerator() != sys.GetEnumerator()) {
+            if (!bodies.SequenceEqual(((IEnumerable<Body>)sys).ToList())) {
                 Console.WriteLine("Constructor does not add bodies");
                 return false;
             }
