@@ -1,0 +1,30 @@
+
+(Program:18598): Gtk-CRITICAL **: gtk_box_pack: assertion '_gtk_widget_get_parent (child) == NULL' failed
+hi
+hi2
+hi
+hi2
+hi
+
+(Program:18598): GLib-CRITICAL **: Source ID 2747 was not found when attempting to remove it
+hi2
+hi
+hi2
+hi
+hi2
+
+(Program:18598): Gtk-CRITICAL **: gtk_box_pack: assertion '_gtk_widget_get_parent (child) == NULL' failed
+*** BUG ***
+In pixman_region32_union: Malformed region reg1
+Set a breakpoint on '_pixman_log_error' to debug
+
+hi
+hi2
+
+(Program:18598): GLib-CRITICAL **: Source ID 8588 was not found when attempting to remove it
+hi
+hi2
+hi
+hi2
+
+(Program:18598): Gtk-CRITICAL **: gtk_box_pack: assertion '_gtk_widget_get_parent (child) == NULL' failed
