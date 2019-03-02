@@ -13,11 +13,24 @@ True anomaly | the angle from the periapsis anticlockwise to the current positio
 
 The best way to understand how these work is to modify the variables of an existing system.
 
-Eccentricity/Semi-latus rectum:
+### Eccentricity/Semi-latus rectum:
 
 ![eccentricity](help/eccentricity.jpg "Eccentricity")
 
-In Simulation Controls:
+### Existing Systems
+
+There are several existing systems to try:
+
+Name        | Description
+--------------------|------------
+Standard            | Our solar system
+Inner               | The inner 4 planets of our solar system
+EccentricityDemo    | A demonstration of how eccentricity affects orbits, as shown on the help page
+RoguePlanet1/RoguePlanet2 | Two examples of the effects of a rogue planet entering our solar system
+SuperJupiterEarth   | An example of three body mechanics, with earth orbiting a planet much more massive than jupiter
+Binary              | A binary star system, showing non-Keplerian orbital mechanics
+
+### In Simulation Controls:
 
 Control     | Effect
 ------------|------------
@@ -25,6 +38,7 @@ Esc         | Pause and edit variables
 L           | camera lock
 R           | Reset camera
 F           | Change camera focus
+C           | Toggle stereoscopic camera
 Mouse       | Move Camera
 Scroll      | Zoom
 Up/Down     | Increase/Decrease size of planets (realistic sizes cannot be seen)

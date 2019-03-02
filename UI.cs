@@ -48,6 +48,7 @@ namespace UI {
             var addBox = new HBox();
             var addButton = new Button("Add");
             addButton.Clicked += new EventHandler(OnAddClick);
+            var filenameText = new Label("Save File: ");
             filename = new Entry();
             var saveButton = new Button("Save");
             saveButton.Clicked += new EventHandler(OnSaveClick);
@@ -63,6 +64,7 @@ namespace UI {
             bCombo.Active = 0; // Default to Custom body
             addBox.PackStart(bCombo, true, false, 3);
             addBox.PackStart(addButton, true, false, 3);
+            addBox.PackStart(filenameText, true, false, 3);
             addBox.PackStart(filename, true, false, 3);
             addBox.PackStart(saveButton, true, false, 3);
             addBox.PackStart(loadButton, true, false, 3);
@@ -264,6 +266,11 @@ namespace UI {
                 
             }
         }
+        public void OnNameChanged(object obj, EventArgs args) {
+            foreach (BodyBox b in new_bodies) {
+                b.ResetParents();
+            }
+        }
     }
     public class BodyBox : HBox {
         public Body body {get; set;}
@@ -290,6 +297,7 @@ namespace UI {
             body = new Structures.Body();
             name = new Entry();
             name.IsEditable = true;
+            name.Changed += new EventHandler(menu.OnNameChanged);
             ResetParents();
             MassScale = new Scale(Orientation.Vertical, 0.1,50,0.01);
             RadiusScale = new Scale(Orientation.Vertical, 0.1,1000000,0.1);
@@ -300,8 +308,11 @@ namespace UI {
             PAScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
             TAScale = new Scale(Orientation.Vertical, 0,359.99,0.01);
             RScale = new Scale(Orientation.Horizontal, 0, 1, 0.01);
+            RScale.Value = 1;
             GScale = new Scale(Orientation.Horizontal, 0, 1, 0.01);
+            GScale.Value = 1;
             BScale = new Scale(Orientation.Horizontal, 0, 1, 0.01);
+            BScale.Value = 1;
             CenterButton = new CheckButton("Focusable");
             DeleteButton = new Button("Delete");
             DeleteButton.Clicked += new EventHandler(OnDeleteClick);
@@ -315,6 +326,8 @@ namespace UI {
             ANLScale.Inverted = true;
             PAScale.Inverted = true;
             TAScale.Inverted = true;
+            var pBox = new VBox(homogeneous: false, spacing: 3);
+            pBox.PackStart(new Label("Parent Body"), false, false, 3); pBox.PackStart(parent, true, true, 3);
             var mBox = new VBox(homogeneous: false, spacing: 3);
             mBox.PackStart(new Label("ln(m)"), false, false, 3); mBox.PackStart(MassScale, true, true, 3);
             var rBox = new VBox(homogeneous: false, spacing: 3);
@@ -333,7 +346,7 @@ namespace UI {
             taBox.PackStart(new Label("ν (°)"), false, false, 3); taBox.PackStart(TAScale, true, true, 3);
 
             this.PackStart(name, true, true, 3);
-            this.PackStart(parent, false, false, 3);
+            this.PackStart(pBox, false, false, 3);
             this.PackStart(mBox, true, true, 3);
             this.PackStart(rBox, true, true, 3);
             this.PackStart(slrBox, true, true, 3);
