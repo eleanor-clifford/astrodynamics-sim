@@ -16,14 +16,14 @@ namespace Program {
         private static bool canMove = false;
         private static Vector3 rootPos = null;
         private static Vector3 rootAngle = null;
-        public static readonly double mouse_sensitivity = 1;
-        public static readonly double scroll_sensitivity = 1.1;
-        public static readonly double time_sensitivity = 1.2;
-        public static readonly double radius_sensitivity = 1.1;
-        public static readonly int line_sensitivity = 5;
-        public static double focalLength = -1;
+        private static readonly double MOUSE_SENSITIVITY = 1;
+        private static readonly double SCROLL_SENSITIVITY = 1.1;
+        private static readonly double TIME_SENSITIVITY = 1.2;
+        private static readonly double RADIUS_SENSITIVITY = 1.1;
+        private static readonly int LINE_SENSITIVITY = 5;
+        private static double focal_length = -1;
         [GLib.ConnectBefore]
-    	public static void KeyPress(object sender, KeyPressEventArgs args) {
+    	public static void OnKeyPress(object sender, KeyPressEventArgs args) {
 	    	if (args.Event.Key == Gdk.Key.f) {
 		    	if (Program.activesys == null) return;
 			    else {
@@ -40,24 +40,24 @@ namespace Program {
                     rootPos = null;
                 }
             } else if (args.Event.Key == Gdk.Key.Up) {
-                Program.sys_view.radius_multiplier *= radius_sensitivity;
+                Program.sys_view.radius_multiplier *= RADIUS_SENSITIVITY;
             } else if (args.Event.Key == Gdk.Key.Down) {
-                Program.sys_view.radius_multiplier /= radius_sensitivity;
+                Program.sys_view.radius_multiplier /= RADIUS_SENSITIVITY;
             } else if (args.Event.Key == Gdk.Key.Right) {
                 Program.activesys.Stop();
-                Program.timestep *= time_sensitivity;
+                Program.timestep *= TIME_SENSITIVITY;
                 Program.activesys.StartAsync(step: Program.timestep);
             } else if (args.Event.Key == Gdk.Key.Left) {
                 Program.activesys.Stop();
-                Program.timestep /= time_sensitivity;
+                Program.timestep /= TIME_SENSITIVITY;
                 Program.activesys.StartAsync(step: Program.timestep);
             } else if (args.Event.Key == Gdk.Key.Page_Down) {
                 // don't make it smaller than 0
-                if (Program.sys_view.line_max >= line_sensitivity) {
-                    Program.sys_view.line_max -= line_sensitivity;
+                if (Program.sys_view.line_max >= LINE_SENSITIVITY) {
+                    Program.sys_view.line_max -= LINE_SENSITIVITY;
                 }
             } else if (args.Event.Key == Gdk.Key.Page_Up) {
-                Program.sys_view.line_max += line_sensitivity;
+                Program.sys_view.line_max += LINE_SENSITIVITY;
             } else if (args.Event.Key == Gdk.Key.Escape) {
                 Program.sys_view.Stop();
                 Program.activesys.Stop();
@@ -74,44 +74,44 @@ namespace Program {
                 menu.temp_savedata = data;
                 menu.loadButton.Click();
             } else if (args.Event.Key == Gdk.Key.q) {
-                Program.sys_view.camera = new Camera(Vector3.Magnitude(Program.sys_view.camera.position)*scroll_sensitivity,Program.sys_view.camera.angle);
+                Program.sys_view.camera = new Camera(Vector3.Magnitude(Program.sys_view.camera.position)*SCROLL_SENSITIVITY,Program.sys_view.camera.angle);
             } else if (args.Event.Key == Gdk.Key.w) {
-                Program.sys_view.camera = new Camera(Vector3.Magnitude(Program.sys_view.camera.position)/scroll_sensitivity,Program.sys_view.camera.angle);
+                Program.sys_view.camera = new Camera(Vector3.Magnitude(Program.sys_view.camera.position)/SCROLL_SENSITIVITY,Program.sys_view.camera.angle);
             } else if (args.Event.Key == Gdk.Key.c) {
-                if (focalLength == -1) {
+                if (focal_length == -1) {
                     Console.WriteLine("hi");
-                    focalLength = Vector3.Magnitude(Program.sys_view.camera.position);
+                    focal_length = Vector3.Magnitude(Program.sys_view.camera.position);
                     Program.sys_view.camera = new Camera(1000*AU,Program.sys_view.camera.angle);
                     //Program.sys_view.ClearPaths();
                     //Program.sys_view.Redraw();
                 } else {
                     Console.WriteLine("hi2");
-                    Program.sys_view.camera = new Camera(focalLength,Program.sys_view.camera.angle);
+                    Program.sys_view.camera = new Camera(focal_length,Program.sys_view.camera.angle);
                     //Program.sys_view.Redraw();
-                    focalLength = -1;
+                    focal_length = -1;
                 }
             }
 	    }
         [GLib.ConnectBefore]
-        public static void MouseMovement(Object sender, MotionNotifyEventArgs args) {
+        public static void OnMouseMovement(Object sender, MotionNotifyEventArgs args) {
             if (canMove) {
                 if (rootPos == null || rootAngle == null ) {
                     rootPos = new Vector3(args.Event.X,args.Event.Y,0);
                     rootAngle = Program.sys_view.camera.angle;
                 } else {
                     double d = Vector3.Magnitude(Program.sys_view.camera.position);
-                    Program.sys_view.camera = new Camera(d,rootAngle + deg*mouse_sensitivity* new Vector3(rootPos.y - args.Event.Y,0,args.Event.X - rootPos.x));
+                    Program.sys_view.camera = new Camera(d,rootAngle + deg*MOUSE_SENSITIVITY* new Vector3(rootPos.y - args.Event.Y,0,args.Event.X - rootPos.x));
                 } args.RetVal = true;
             }
         }
         [GLib.ConnectBefore]
-        public static void Scroll(Object sender, ScrollEventArgs args) {
+        public static void OnScrollMovement(Object sender, ScrollEventArgs args) {
             if (args.Event.Direction == Gdk.ScrollDirection.Up) {
-                Program.sys_view.bounds_multiplier /= scroll_sensitivity;
-                Program.sys_view.camera = new Camera(Vector3.Magnitude(Program.sys_view.camera.position)/scroll_sensitivity,Program.sys_view.camera.angle);
+                Program.sys_view.bounds_multiplier /= SCROLL_SENSITIVITY;
+                Program.sys_view.camera = new Camera(Vector3.Magnitude(Program.sys_view.camera.position)/SCROLL_SENSITIVITY,Program.sys_view.camera.angle);
             } else if (args.Event.Direction == Gdk.ScrollDirection.Down) {
-                Program.sys_view.bounds_multiplier *= scroll_sensitivity;
-                Program.sys_view.camera = new Camera(Vector3.Magnitude(Program.sys_view.camera.position)*scroll_sensitivity,Program.sys_view.camera.angle);
+                Program.sys_view.bounds_multiplier *= SCROLL_SENSITIVITY;
+                Program.sys_view.camera = new Camera(Vector3.Magnitude(Program.sys_view.camera.position)*SCROLL_SENSITIVITY,Program.sys_view.camera.angle);
 
             }
         }

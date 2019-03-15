@@ -10,27 +10,26 @@ using Structures;
 namespace UI {
     public class Menu : Window {
         protected VBox containerbox;
-        protected VBox radiobox;
+        protected VBox controlbox;
         protected ScrolledWindow systemscrollbox;
         protected VBox systembox;
         protected HBox donebox;
         protected Scale TimestepScale;
         protected Scale RScale;
         protected Scale LineScale;
-        protected ComboBoxText bCombo;
+        protected ComboBoxText BodyCombo;
         public Button loadButton {get; set;}
         protected Entry filename;
         protected readonly String SYSTEM_DIRECTORY = "ExampleSystems";
-        protected static List<Structures.Body> std_bodies = Examples.solar_system_bodies;
-        internal static List<BodyBox> new_bodies {get; set;} = new List<BodyBox>();
+        internal List<BodyBox> new_bodies {get; set;} = new List<BodyBox>();
         public SaveData temp_savedata {get; set;} = null;
         protected static List<bool> centers = new List<bool>();
         
-        public Menu(Gtk.WindowType s = Gtk.WindowType.Toplevel) : base(s) { // weird inheritancy stuff, don't change
+        public Menu(Gtk.WindowType s = Gtk.WindowType.Toplevel) : base(s) { 
             this.SetDefaultSize(300,400);
             this.DeleteEvent += delegate { Application.Quit (); };
             containerbox = new VBox(homogeneous: false, spacing: 3);
-            radiobox = new VBox(homogeneous: false, spacing: 3);
+            controlbox = new VBox(homogeneous: false, spacing: 3);
             systemscrollbox = new ScrolledWindow();
             systembox = new VBox(homogeneous: false, spacing: 3);
             donebox = new HBox(homogeneous: false, spacing: 3);
@@ -56,13 +55,13 @@ namespace UI {
             loadButton.Clicked += new EventHandler(OnLoadClick);
             var helpButton = new Button("?");
             helpButton.Clicked += new EventHandler(OnHelpClick);
-            bCombo = new ComboBoxText();
-            bCombo.AppendText("Custom");
-            foreach (Body b in Menu.std_bodies) {
-                bCombo.AppendText(b.name);
+            BodyCombo = new ComboBoxText();
+            BodyCombo.AppendText("Custom");
+            foreach (Body b in Examples.solar_system_bodies) {
+                BodyCombo.AppendText(b.name);
             } 
-            bCombo.Active = 0; // Default to Custom body
-            addBox.PackStart(bCombo, true, false, 3);
+            BodyCombo.Active = 0; // Default to Custom body
+            addBox.PackStart(BodyCombo, true, false, 3);
             addBox.PackStart(addButton, true, false, 3);
             addBox.PackStart(filenameText, true, false, 3);
             addBox.PackStart(filename, true, false, 3);
@@ -90,15 +89,15 @@ namespace UI {
             optionsbox.PackStart(optionbox2, true, true, 3);
             optionsbox.PackStart(optionbox3, true, true, 3);
 
-            radiobox.PackStart(optionsbox, false, false, 3);
-            radiobox.PackStart(addButton, false, false, 3);
-            radiobox.PackStart(addBox, false, false, 3);
+            controlbox.PackStart(optionsbox, false, false, 3);
+            controlbox.PackStart(addButton, false, false, 3);
+            controlbox.PackStart(addBox, false, false, 3);
             systemscrollbox.Add(systembox);
             donebox.PackStart(doneButton, true, true, 3);
             donebox.PackStart(exitButton, true, true, 3);
 
 
-            containerbox.PackStart(radiobox, false, false, 3);
+            containerbox.PackStart(controlbox, false, false, 3);
             containerbox.PackStart(systemscrollbox, true, true, 3);
             containerbox.PackStart(donebox, false, false, 3);
             this.Add(containerbox);
@@ -123,7 +122,7 @@ namespace UI {
                 Program.Program.radius_multiplier = RScale.Value;
                 Program.Program.line_max = (int)LineScale.Value;
                 Program.Program.timestep = TimestepScale.Value;
-                Program.Program.Start();
+                Program.Program.StartSimulation();
                 this.Destroy();
             } catch (Exception e) {
                 Message("I'm sorry, something went wrong but I don't know what. \nIf you can find a bored developer, show him this stack trace:\n" + e.Message + e.StackTrace);
@@ -132,17 +131,17 @@ namespace UI {
         protected void OnAddClick(object obj, EventArgs args) {
 
             var bodyBox = new BodyBox(menu: this, homogeneous: false, spacing: 3);
-            String bString = bCombo.ActiveText;
+            String bString = BodyCombo.ActiveText;
             if (bString != "Custom") {
                 var body = Examples.solar_system.First(b => b.name == bString);
                 if (!(body.parent == null || new_bodies.Exists(b => b.name.Text == body.parent.name))) {
-                    body = std_bodies.First(b => b.name == bString);
+                    body = Examples.solar_system_bodies.First(b => b.name == bString);
                 }
                 bodyBox.body = body;
                 bodyBox.ReverseSet();
             }
             
-            bodyBox.name.Text = bCombo.ActiveText;
+            bodyBox.name.Text = BodyCombo.ActiveText;
             systembox.PackStart(bodyBox, true, true, 3);
             new_bodies.Add(bodyBox);
             foreach (BodyBox b in new_bodies) {
@@ -290,10 +289,8 @@ namespace UI {
         public CheckButton CenterButton {get; set;}
         public Button DeleteButton {get; set;}
         private static readonly double ECCENTRICITY_MAX = 3;
-        private Menu menu;
         public BodyBox() {}
         public BodyBox(Menu menu, bool homogeneous = false, int spacing = 3) : base(homogeneous,spacing) {
-            this.menu = menu;
             body = new Structures.Body();
             name = new Entry();
             name.IsEditable = true;
@@ -371,7 +368,7 @@ namespace UI {
         }
         protected void OnParentChange(object obj, EventArgs args) {
             try {
-                var parentBody = Menu.new_bodies.FirstOrDefault(b => b.body.name == parent.ActiveText).body;
+                var parentBody = menu.new_bodies.FirstOrDefault(b => b.body.name == parent.ActiveText).body;
                 double hillrad = parentBody.HillRadius()/AU;
                 this.SLRScale.Digits = Math.Max(0,8);//3-(int)Math.Log(hillrad/100000));
                 this.SLRScale.SetIncrements(Math.Pow(10,-this.SLRScale.Digits),hillrad/100000);
@@ -393,7 +390,7 @@ namespace UI {
                     periapsisArgument = PAScale.Value*deg,
                     trueAnomaly = TAScale.Value*deg
                 };
-                body = new Structures.Body(Menu.new_bodies.FirstOrDefault(b => b.body.name == parent.ActiveText).body,elements);
+                body = new Structures.Body(menu.new_bodies.FirstOrDefault(b => b.body.name == parent.ActiveText).body,elements);
             }
             body.name = this.name.Text;
             body.stdGrav = Math.Pow(Math.E,MassScale.Value)*G*1e22;
@@ -420,7 +417,7 @@ namespace UI {
         }
         public void ReverseSet(bool elem = true) {
             if (elem) try {
-                parent.Active  = Menu.new_bodies.FindIndex(b => b.name.Text == body.parent.name);
+                parent.Active  = menu.new_bodies.FindIndex(b => b.name.Text == body.parent.name);
                 var elements   = new OrbitalElements(body.position-body.parent.position,body.velocity-body.parent.velocity,body.parent.stdGrav);
                 this.SetElements(elements);
             } catch (NullReferenceException) {} // if body has no parent
@@ -433,11 +430,11 @@ namespace UI {
         }
         public void ResetParents() {
             parent.RemoveAll();
-            foreach (BodyBox b in Menu.new_bodies) {
+            foreach (BodyBox b in menu.new_bodies) {
                 parent.AppendText(b.name.Text);
             }
             try {
-                parent.Active = Menu.new_bodies.FindIndex(b => b.name.Text == body.parent.name);
+                parent.Active = menu.new_bodies.FindIndex(b => b.name.Text == body.parent.name);
             } catch (NullReferenceException) {} // parent no longer exists
 
         }

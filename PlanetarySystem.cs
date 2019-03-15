@@ -11,14 +11,11 @@ namespace Structures
 		protected bool running = false;
 		protected List<Body> bodies;
 		public List<int> centers {get; set;} = new List<int>();
-		// -1 indicates space is not locked
-		public int center_index = -1;
+		protected int center_index = -1; // -1 indicates space is not locked
 		public PlanetarySystem(List<Body> bodies = null) {
 			if (bodies == null) this.bodies = new List<Body>();
 			else this.bodies = bodies;
 		}
-
-
 		public Body this[int key] {
     		get {
         		return this.bodies[key];

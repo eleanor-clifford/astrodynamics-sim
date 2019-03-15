@@ -12,15 +12,17 @@ using Graphics;
 namespace Program {
     static class Program {
         public static PlanetarySystem activesys {get; set;}
-        public static SystemView sys_view {get; set;} = null;
+        public static SystemView sys_view {get; set;}
+        public static UI.Menu menu {get; set;}
         public static double timestep {get; set;}
         //public static List<Boolean> RadioOptions {get; set;}
+        public static int line_max {get; set;}
+        public static double radius_multiplier {get; set;}
         public static List<Body> CustomBodies {get; set;} = new List<Body>();
         public static List<bool> CustomCenters {get; set;} = new List<bool>();
         public static Gtk.Window mainWindow {get; set;}
-        public static double radius_multiplier {get; set;}
-        public static int line_max {get; set;}
-        public static void Start() {
+        
+        public static void StartSimulation() {
             activesys = new Structures.PlanetarySystem(CustomBodies);
             if (activesys.centers == null) activesys.centers = new List<int>();
             activesys.centers.Clear();
@@ -31,9 +33,9 @@ namespace Program {
             mainWindow.SetDefaultSize(1280,720);
             mainWindow.Events |= EventMask.PointerMotionMask | EventMask.ScrollMask;
             mainWindow.DeleteEvent += delegate { Application.Quit (); };
-            mainWindow.KeyPressEvent += Input.KeyPress;
-            mainWindow.MotionNotifyEvent += Input.MouseMovement;
-            mainWindow.ScrollEvent += Input.Scroll;
+            mainWindow.KeyPressEvent += Input.OnKeyPress;
+            mainWindow.MotionNotifyEvent += Input.OnMouseMovement;
+            mainWindow.ScrollEvent += Input.OnScrollMovement;
             sys_view = new SystemView(activesys);
             sys_view.radius_multiplier = radius_multiplier;
             sys_view.line_max = line_max;
@@ -46,7 +48,7 @@ namespace Program {
         static void Main(string[] args) {
             try {
                 Application.Init();
-                var menu = new UI.Menu();
+                menu = new UI.Menu();
                 Application.Run();
             } catch (Exception e) {
                 Console.WriteLine("An unexpected error occured");
