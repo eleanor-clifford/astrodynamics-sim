@@ -378,6 +378,29 @@ blockquote {
 </head>
 <body>
 <h1 id="help">Help</h1>
+<p>Main variables:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mechanics Timestep</td>
+<td>The time in seconds that acceleration is assumed to be constant for. Set higher for faster simulation, lower for more accurate simulation</td>
+</tr>
+<tr>
+<td>Planetary Radii Multiplier</td>
+<td>The factor by which the size of bodies are multiplied when drawn to the screen. (At real size, most planets cannot be seen)</td>
+</tr>
+<tr>
+<td>Orbit Trail Length</td>
+<td>The length of the trails of each body, as a number of timesteps</td>
+</tr>
+</tbody>
+</table>
 <p>Below are descriptions of the various orbital elements you can change</p>
 <table>
 <thead>
@@ -427,7 +450,7 @@ blockquote {
 </tr>
 </tbody>
 </table>
-<p>The best way to understand how these work is to modify the variables of an existing system.</p>
+<p>The best way to understand how these work is to modify the variables of an existing system. For each body you can also edit its name and which planet it is orbiting. If it is set to not be orbiting any planet, the orbital elements will be ignored and it will be placed at the origin with 0 velocity.</p>
 <h3 id="eccentricitysemi-latus-rectum">Eccentricity/Semi-latus rectum:</h3>
 <p><img src="file:///home/ellieclifford/Projects/astrodynamics-sim/help/eccentricity.jpg" alt="eccentricity" title="Eccentricity"></p>
 <h3 id="existing-systems">Existing Systems</h3>
@@ -450,7 +473,7 @@ blockquote {
 </tr>
 <tr>
 <td>EccentricityDemo</td>
-<td>A demonstration of how eccentricity affects orbits, as shown on the help page</td>
+<td>A demonstration of how eccentricity affects orbits, as shown above</td>
 </tr>
 <tr>
 <td>RoguePlanet1/RoguePlanet2</td>
@@ -492,6 +515,14 @@ blockquote {
 <td>Change camera focus</td>
 </tr>
 <tr>
+<td>C</td>
+<td>Toggle stereoscopic camera</td>
+</tr>
+<tr>
+<td>P</td>
+<td>Pause</td>
+</tr>
+<tr>
 <td>Mouse</td>
 <td>Move Camera</td>
 </tr>
@@ -501,15 +532,15 @@ blockquote {
 </tr>
 <tr>
 <td>Up/Down</td>
-<td>Increase/Decrease size of planets (realistic sizes cannot be seen)</td>
+<td>Increase/Decrease planetary radii multiplier</td>
 </tr>
 <tr>
 <td>Right/Left</td>
-<td>Increase/Decrease running speed (it is more accurate at lower speeds)</td>
+<td>Increase/Decrease mechanics timestep</td>
 </tr>
 <tr>
 <td>PgUp/PgDown</td>
-<td>Increase/Decrease trail length</td>
+<td>Increase/Decrease orbit trail length</td>
 </tr>
 </tbody>
 </table>

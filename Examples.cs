@@ -10,7 +10,6 @@ namespace Structures {
 		public static PlanetarySystem solar_system {get; private set;}
 		public static List<OrbitalElements> solar_system_elements {get; private set;}
 		public static List<Body> solar_system_bodies {get; private set;}
-		public static PlanetarySystem inner_solar_system {get; private set;}
 		static Examples() {
 			sun = new Body() {
 				name = "Sol",

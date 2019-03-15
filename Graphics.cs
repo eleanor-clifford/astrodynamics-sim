@@ -37,7 +37,7 @@ namespace Graphics {
 		public int line_max {get; set;} = 100;
 		public double bounds_multiplier {get; set;} = 1;//0.25;
 		protected PlanetarySystem sys;
-		protected readonly double line_multiplier = 0.8;
+		protected readonly double LINE_MULTIPLIER = 0.8;
 		protected bool playing = false;
 		protected List<Vector3>[] paths;
 		protected int[] order;
@@ -45,9 +45,9 @@ namespace Graphics {
 		public SystemView(PlanetarySystem sys) {
 			this.sys = sys;
 			this.camera = new Camera(sys.Max(b => Vector3.Magnitude(b.position - sys.origin)),Vector3.zero);
-			Redraw();
+			SetMax();
 		}
-		public void Redraw() {
+		public void SetMax() {
 			order = new int[sys.Count];
 			for (int i = 0; i < sys.Count; i++) order[i] = i;
 			max = 0;
@@ -112,7 +112,7 @@ namespace Graphics {
 				} catch (ArgumentOutOfRangeException) {
 					lastPath = Vector3.zero;
 				}
-				ctx.LineWidth = Math.Min(line_multiplier * radius_multiplier * body.radius, line_multiplier*r);
+				ctx.LineWidth = Math.Min(LINE_MULTIPLIER * radius_multiplier * body.radius, LINE_MULTIPLIER*r);
 				foreach (Vector3 p in paths[order[i]]) {
 					pos = camera.TransformProjection(camera.Transform(p));
 					ctx.MoveTo(lastPath.x,lastPath.y);

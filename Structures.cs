@@ -20,15 +20,15 @@ namespace Structures
 			this.z = z;
 		}
 		// Immutable standard vectors
-		public static Vector3 zero {get;} = new Vector3(0,0,0);
-		public static Vector3 i {get;} = new Vector3(1,0,0);
-		public static Vector3 j {get;} = new Vector3(0,1,0);
-		public static Vector3 k {get;} = new Vector3(0,0,1);
+		public static readonly Vector3 zero = new Vector3(0,0,0);
+		public static readonly Vector3 i = new Vector3(1,0,0);
+		public static readonly Vector3 j = new Vector3(0,1,0);
+		public static readonly Vector3 k = new Vector3(0,0,1);
 		public override String ToString() {
 			return $"Vector3({x},{y},{z})";
 		}
 		public static bool operator== (Vector3 a, Vector3 b) {
-			// why reimplement null checks ourselves?
+			// Use inherited object null equality
 			if ((object)a == null || ((object)b == null)) return (object)a == null && (object)b == null;
 			// otherwise return true if all components are within 10^-10
 			bool[] eq = new bool[3];
@@ -81,6 +81,7 @@ namespace Structures
 			return Math.Sqrt(Math.Pow(v.x,2)+Math.Pow(v.y,2)+Math.Pow(v.z,2));
 		}
 		public static Vector3 Unit(Vector3 v) {
+			// Throw exception if v is an invalid value
 			if (v == Vector3.zero) {
 				throw new DivideByZeroException("Cannot take unit of zero vector");
 			}
@@ -99,9 +100,7 @@ namespace Structures
 		}
 		public static Vector3 LogByComponent(Vector3 v, double b = Math.E) {
 			// Cartesian Logarithm, all components are logged
-			var r = new Vector3(0,0,0); 
-			// using Vector3.zero will modify it, since we are inside the Vector class,
-			// where Vector3.zero is mutable
+			var r = new Vector3(0,0,0);
 			if (v.x < 0) r.x = -Math.Log(-v.x,b);
 			else if (v.x != 0) r.x = Math.Log(v.x,b);
 			if (v.y < 0) r.y = -Math.Log(-v.y,b);
@@ -172,6 +171,7 @@ namespace Structures
 			return ZRotation(v.z)*YRotation(v.y)*XRotation(v.x);
 		}
 		public static bool operator== (Matrix3 a, Matrix3 b) {
+			// Use vector equality
 			return a.x == b.x && a.y == b.y && a.z == b.z;
 		}
 		public static bool operator!= (Matrix3 a, Matrix3 b) {
@@ -187,6 +187,7 @@ namespace Structures
 			);
 		}
 		public static Vector3 operator* (Matrix3 m, Vector3 v) {
+			// Using the fact that a matrix (1xn) multiplied by a (nx1) is equivalent to the dot of two n-vectors
 			return new Vector3(
 				Vector3.dot(m.x,v),
 				Vector3.dot(m.y,v),
@@ -202,10 +203,13 @@ namespace Structures
 			);
 		}
 		public static Matrix3 operator/ (Matrix3 m, double d) {
+			// raise exception on invalid value
 			if (d == 0) throw new DivideByZeroException("Matrix Division By Zero");
 			else return (1/d) * m;
 		}
 		public static Matrix3 operator* (Matrix3 l, Matrix3 r) {
+			// Finding a new matrix of the transpose of r converts it from row vectors to column vectors
+			// so we can use the dot product to find each value
 			var r_t = Matrix3.Transpose(r);
 			return new Matrix3 (
 				new Vector3(
@@ -237,8 +241,7 @@ namespace Structures
 				new Vector3(m.x.z,m.y.z,m.z.z)
 			);
 		}
-		public static Matrix3 TransposeCofactor(Matrix3 m) {
-			// We never need to do the cofactor without the transpose, so this is an optimisation
+		public static Matrix3 Adjugate(Matrix3 m) {
 			return new Matrix3(
 				new Vector3(m.x.x,-m.y.x,m.z.x),
 				new Vector3(-m.x.y,m.y.y,-m.z.y),
@@ -266,16 +269,15 @@ namespace Structures
 		}
 		public static Matrix3 Inverse(Matrix3 m) {
 			if (Matrix3.Determinant(m) == 0) throw new DivideByZeroException("Singular Matrix");
-			Matrix3 C_T = Matrix3.TransposeCofactor(Matrix3.Minor(m));
-			return (1/Matrix3.Determinant(m)) * C_T;
+			Matrix3 A = Matrix3.Adjugate(Matrix3.Minor(m));
+			return (1/Matrix3.Determinant(m)) * A;
 		}
 	}
 	[Serializable()]
 	public class Body : ICloneable {
 		public string name {get; set;}
 		public Body parent {get; set;}
-		// standard gravitational parameter
-		public double stdGrav {get; set;}
+		public double stdGrav {get; set;} // standard gravitational parameter
 		public double radius {get; set;}
 		public Vector3 position {get; set;} = Vector3.zero;
 		public Vector3 velocity {get; set;} = Vector3.zero;
@@ -300,25 +302,23 @@ namespace Structures
 				// Throw an exception if the arguments are out of bounds
 				throw new ArgumentException();
 			}
-			double semilatusrectum = elements.semilatusrectum;//*(1-Math.Pow(elements.eccentricity,2));
 			// working in perifocal coordinates (periapsis along the x axis, orbit in the x,y plane):
-			double mag_peri_radius = semilatusrectum/(1+elements.eccentricity*Math.Cos(elements.trueAnomaly));
+			double mag_peri_radius = elements.semilatusrectum/(1+elements.eccentricity*Math.Cos(elements.trueAnomaly));
 			Vector3 peri_radius = mag_peri_radius*new Vector3(Math.Cos(elements.trueAnomaly),Math.Sin(elements.trueAnomaly),0);
-			Vector3 peri_velocity = Math.Sqrt(parent.stdGrav/semilatusrectum)
+			Vector3 peri_velocity = Math.Sqrt(parent.stdGrav/elements.semilatusrectum)
 									* new Vector3(
 										-Math.Sin(elements.trueAnomaly),
 										Math.Cos(elements.trueAnomaly) + elements.eccentricity,
 										0
 									);
-			// useful constants to setup matrix
-			var sini = Math.Sin(elements.inclination); // i -> inclination
+			// useful constants to setup transformation matrix
+			var sini = Math.Sin(elements.inclination); // i <- inclination
 			var cosi = Math.Cos(elements.inclination);
-			var sino = Math.Sin(elements.ascendingNodeLongitude); // capital omega -> longitude of ascending node
+			var sino = Math.Sin(elements.ascendingNodeLongitude); // capital omega <- longitude of ascending node
 			var coso = Math.Cos(elements.ascendingNodeLongitude);
-			var sinw = Math.Sin(elements.periapsisArgument); // omega -> argument of periapsis
+			var sinw = Math.Sin(elements.periapsisArgument); // omega <- argument of periapsis
 			var cosw = Math.Cos(elements.periapsisArgument);
-			// As described by the book "Fundamentals of Astrodynamics",
-			// we transform perifocal coordinates to i,j,k coordinates
+			// Transform perifocal coordinates to i,j,k coordinates
 			Matrix3 transform = new Matrix3(
 				new Vector3(
 					coso*cosw - sino*sinw*cosi,
@@ -359,7 +359,7 @@ namespace Structures
 		}
 	}
 	internal class FundamentalVectors {
-		// The fundamental vectors of an orbit
+		// The fundamental vectors of an orbit. Used by OrbitalElements
 		public Vector3 angularMomentum {get; set;}
 		public Vector3 eccentricity {get; set;}
 		public Vector3 node {get; set;}
@@ -411,16 +411,13 @@ namespace Structures
 				_trueAnomaly = value%(2*Math.PI);
 			}
 		}
-		public OrbitalElements() {} // For serialisation
+		public OrbitalElements() {} // Parameterless constructor for serialisation
 		public OrbitalElements(Vector3 position, Vector3 velocity, double stdGrav) {
 			// stdGrav is the gravitational parameter of the parent body
 			var fVectors = new FundamentalVectors(position,velocity,stdGrav);
 			this.eccentricity = Vector3.Magnitude(fVectors.eccentricity);
-			var semilatusrectum = Math.Pow(Vector3.Magnitude(fVectors.angularMomentum),2)/stdGrav;
-			this.semilatusrectum = semilatusrectum;///(1-Math.Pow(eccentricity,2));
+			this.semilatusrectum = Math.Pow(Vector3.Magnitude(fVectors.angularMomentum),2)/stdGrav;
 			this.inclination = Math.Acos(fVectors.angularMomentum.z/Vector3.Magnitude(fVectors.angularMomentum)); // 0 <= i <= 180deg			
-			//TODO: fix parabola
-
 			double cosAscNodeLong = fVectors.node.x/Vector3.Magnitude(fVectors.node);
 			if (fVectors.node.y >= 0) this.ascendingNodeLongitude = Math.Acos(cosAscNodeLong);
 			else this.ascendingNodeLongitude = 2*Math.PI - Math.Acos(cosAscNodeLong);
