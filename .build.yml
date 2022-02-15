@@ -1,0 +1,29 @@
+image: debian/stable
+packages:
+  - moreutils
+secrets:
+  - 9ee7c8f6-f330-46d7-8339-574c3d774548
+tasks:
+  - mirror: |
+      export PROJECT="$(ls | grep -v '^git-mirror$')"
+
+      cd $PROJECT
+      git fetch --all
+
+      git branch -r --format="%(refname)" | sed 's|.*/||' | grep -v HEAD \
+      | while read -r branch; do
+        git checkout "$branch"
+        warn="
+
+      | :exclamation:  | This is a mirror of [https://git.sr.ht/~ecc/$PROJECT](https://git.sr.ht/~ecc/$PROJECT). |
+      |----------------|:----------------------------------------------------------------------------------------|
+
+        "
+        (echo "$warn"; cat README.md) | sponge README.md
+        git add README.md
+        git commit -m "[builds.sr.ht] Add mirror warning to README.md"
+      done
+
+      export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+      git remote add downstream git@github.com:eleanor-clifford/$PROJECT.git
+      git push --all --force downstream
